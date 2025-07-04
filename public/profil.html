@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Profil</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/a0a392fad6.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <header>
+        <div class="left">
+            <i class="fas fa-home" id="home"></i>
+        </div>
+        <div class="center filters">
+            <span class="filter-btn" data-type="FILM">FILMS</span>
+            <span class="filter-btn" data-type="SERIE">SÉRIES</span>
+            <span class="filter-btn" data-type="JEU">JEUX</span>
+            <span class="filter-btn" data-type="UNKNOWN_DATE">DATE INCONNUE</span>
+            <span class="filter-btn" data-type="ALREADY_RELEASED">DEJA SORTIE</span>
+
+        </div>
+        <div class="right">
+            <i class="fas fa-question-circle" id="help"></i>
+            <i class="fas fa-search" id="search-icon" title="Rechercher"></i>
+            <i class="fas fa-plus" id="add-btn" title="Ajouter un contenu" style="display: none;"></i>
+            <i class="fas fa-bell" id="notif-btn" title="Notifications" style="display: none;"></i>
+            <i class="fas fa-user-circle" id="profile-btn" title="Profil" style="display: none;"></i>
+            <i class="fas fa-key" id="admin-btn" title="Admin" style="display: none;"></i>
+            <i class="fas fa-right-to-bracket" id="login"></i>
+        </div>
+    </header>
+
+    <div id="global-search-container" style="display: none;">
+        <input type="text" id="global-search" placeholder="Rechercher un contenu..." />
+    </div>
+
+    <div id="platform-filters" style="display: none;" class="filters subfilters">
+        <span class="platform-btn" data-platform="PC">PC</span>
+        <span class="platform-btn" data-platform="XBOX">XBOX</span>
+        <span class="platform-btn" data-platform="PS5">PS5</span>
+        <span class="platform-btn" data-platform="SWITCH">SWITCH</span>
+    </div>
+
+
+    <div class="profile-card">
+        <div class="info-line">
+            <!-- <span class="label">Identité :</span> -->
+            <span id="profile-username" class="value"></span>
+        </div>
+        <div class="info-line">
+            <!-- <span class="label">Ajouts :</span> -->
+            <span id="profile-count" class="value"></span>
+        </div>
+    </div>
+
+    <input type="text" id="profile-search" placeholder="Rechercher un contenu...">
+
+    <div id="profile-filters">
+        <div class="filter-group">
+            <strong>Type :</strong>
+            <label><input type="checkbox" class="filter-type" value="FILM"> Film</label>
+            <label><input type="checkbox" class="filter-type" value="SERIE"> Série</label>
+            <label><input type="checkbox" class="filter-type" value="JEU"> Jeu</label>
+        </div>
+
+        <div class="filter-group">
+            <strong>Plateforme :</strong>
+            <label><input type="checkbox" class="filter-plateforme" value="PC"> PC</label>
+            <label><input type="checkbox" class="filter-plateforme" value="XBOX"> Xbox</label>
+            <label><input type="checkbox" class="filter-plateforme" value="PS5"> PS5</label>
+            <label><input type="checkbox" class="filter-plateforme" value="SWITCH"> Switch</label>
+        </div>
+
+        <div class="filter-group">
+            <strong>Date :</strong>
+            <label><input type="checkbox" class="filter-date" value="known"> Date connue</label>
+            <label><input type="checkbox" class="filter-date" value="unknown"> Date inconnue</label>
+            <label><input type="checkbox" class="filter-date" value="past"> Déjà sortie</label>
+        </div>
+    </div>
+
+    <div id="user-content-list" class="card-container"></div>
+
+    <!-- Modale aide -->
+    <div class="modal-background" id="modal-help" style="display: none;">
+        <div class="modal">
+            <span class="close" onclick="closeModal('modal-help')">×</span>
+            <p>
+                👋 Bienvenue sur <strong>MyCountdown</strong> !<br><br>
+
+                ✅ Une fois <strong>inscrit et connecté</strong> :<br>
+                - Tu peux <strong>ajouter tes propres contenus</strong> à surveiller (jeux, films, séries)<br>
+                - Clique sur ➕ pour ajouter un élément<br><br>
+
+                🔔 Tu veux être averti quand un contenu sort ?<br>
+                - Clique sur la <strong>cloche</strong> pour t'inscrire à la <strong>newsletter</strong><br>
+                - Tu recevras une alerte à chaque sortie !<br><br>
+
+                📅 Un compte à rebours est affiché pour chaque date connue<br>
+                📭 Les contenus sans date ou déjà sortis ont des filtres dédiés<br><br>
+
+                Bonne navigation ! 🚀
+            </p>
+        </div>
+    </div>
+
+    <!-- Modale login -->
+    <!-- <div class="modal-background" id="modal-login" style="display: none;">
+        <div class="modal">
+            <span class="close" onclick="closeModal('modal-login')">×</span>
+            <div class="tabs">
+                <div class="tab active" id="tab-register" onclick="switchForm('register')">Inscription</div>
+                <div class="tab" id="tab-login" onclick="switchForm('login')">Connexion</div>
+            </div>
+            <div id="form-register">
+                <input type="text" id="reg-username" placeholder="Pseudo">
+                <input type="password" id="reg-password" placeholder="Mot de passe">
+                <button onclick="register()">S'inscrire</button>
+                <p id="reg-msg"></p>
+            </div>
+            <div id="form-login" style="display: none;">
+                <input type="text" id="log-username" placeholder="Pseudo">
+                <input type="password" id="log-password" placeholder="Mot de passe">
+                <button onclick="login()">Se connecter</button>
+                <p id="log-msg"></p>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- Modale ajout -->
+    <div class="modal-background" id="modal-add" style="display: none;">
+        <div class="modal">
+            <span class="close" onclick="closeModal('modal-add')">×</span>
+            <h3>Ajouter un contenu</h3>
+            <input type="text" id="add-name" placeholder="Nom" maxlength="43">
+            <select id="add-type" onchange="handleTypeChange()">
+                <option value="">-- Type --</option>
+                <option value="FILM">FILM</option>
+                <option value="SERIE">SÉRIE</option>
+                <option value="JEU">JEU</option>
+            </select>
+            <div id="saison-field" style="display:none;">
+                <input type="number" id="add-season" placeholder="Saison">
+            </div>
+            <div id="platform-field" style="display:none;">
+                <select id="add-platform">
+                    <option value="">-- Plateforme --</option>
+                    <option value="PC">PC</option>
+                    <option value="XBOX">XBOX</option>
+                    <option value="PS5">PS5</option>
+                    <option value="SWITCH">SWITCH</option>
+                </select>
+            </div>
+            <input type="text" id="add-cover" placeholder="Lien jaquette">
+            <input type="text" id="add-url" placeholder="URL (Steam, JVC, AlloCiné...)">
+            <input type="date" id="add-date">
+            <button id="add-submit-btn" onclick="submitContent()">Ajouter</button>
+            <p id="add-msg"></p>
+        </div>
+    </div>
+
+    <!-- Modale newsletter -->
+    <div class="modal-background" id="modal-notif">
+        <div class="modal">
+            <span class="close" onclick="closeModal('modal-notif')">&times;</span>
+            <h2 style="color: black;">Newsletter</h2>
+            <p id="notif-email-info" class="notif-info hidden"></p>
+
+            <div id="notif-inscription">
+                <input type="email" id="notif-email" placeholder="Entrez votre email">
+                <button onclick="submitNotification()">S'inscrire</button>
+            </div>
+
+            <div id="notif-desinscription" style="display: none;">
+                <p id="notif-email-saved-container">
+                    Adresse enregistrée <span id="notif-email-saved"></span>
+                </p>
+                <button onclick="unsubscribeNotification()">Se désinscrire</button>
+            </div>
+
+            <p id="notif-msg"></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="profil.js"></script>
+</body>
+
+</html>

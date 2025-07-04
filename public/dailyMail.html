@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Sorties du jour - MyCountdown</title>
+
+<body>
+    <div class="container">
+        <h1>📅 Sorties du jour</h1>
+        {{RELEASES}}
+    </div>
+</body>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 20px;
+        color: #333;
+    }
+
+    .container {
+        max-width: 600px;
+        background: white;
+        margin: auto;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        text-align: center;
+        color: #222;
+    }
+
+    .release {
+        border-bottom: 1px solid #ccc;
+        padding: 10px 0;
+    }
+
+    .release:last-child {
+        border-bottom: none;
+    }
+
+    .release-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 0 0 5px;
+    }
+
+    .release-info {
+        font-size: 14px;
+        color: #666;
+    }
+</style>
+</head>
+
+</html>

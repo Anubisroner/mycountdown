@@ -1,0 +1,6 @@
+node_modules/
+.env
+BACKUP/
+INFOS.txt
+mailTest/
+logs/

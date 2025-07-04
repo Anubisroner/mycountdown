@@ -1,0 +1,584 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: url("./assets/background.jpg") no-repeat center center fixed;
+    background-size: cover;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+    padding: 10px 20px;
+    background-color: #222;
+    color: white;
+}
+
+header .left,
+header .center,
+header .right {
+    display: flex;
+    align-items: center;
+}
+
+header i {
+    font-size: 24px;
+    margin: 0 10px;
+    cursor: pointer;
+    transition: transform 0.2s, color 0.2s;
+}
+
+header i:hover {
+    transform: scale(1.2);
+    color: #aaa;
+}
+
+.filters span,
+.platform-filter span {
+    margin: 0 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.platform-filter {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.filters {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.main-filters {
+    margin-top: 10px;
+}
+
+.subfilters {
+    display: none;
+    justify-content: center;
+    gap: 10px;
+    padding-bottom: 5px;
+    flex-wrap: wrap;
+    width: 100%;
+    background-color: #222;
+    border-top: 1px solid #444;
+}
+
+.filter-btn,
+.platform-btn {
+    color: white;
+    border: 1px solid #444;
+    padding: 6px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.filter-btn:hover,
+.platform-btn:hover {
+    background-color: #333;
+    transform: scale(1.05);
+    color: #007BFF;
+}
+
+/* Modale fond */
+.modal-background {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+/* Modale boite */
+.modal {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    width: 340px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+    position: relative;
+    animation: popup 0.3s ease;
+    overflow: hidden;
+    min-height: 280px;
+    transition: height 0.3s ease;
+}
+
+@keyframes popup {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+
+/* Croix dans un rond */
+.modal .close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #ddd;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.modal .close:hover {
+    background: #bbb;
+}
+
+/* Formulaire */
+.modal input,
+.modal select,
+.modal button {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.modal button {
+    background: #222;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.modal button:hover {
+    background: #444;
+}
+
+.modal select {
+    background-color: white;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.modal .switch {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.9em;
+    color: #555;
+    cursor: pointer;
+}
+
+.modal .switch:hover {
+    text-decoration: underline;
+}
+
+.modal .tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+}
+
+.modal .tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #888;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.modal .tab.active {
+    color: #222;
+    border-bottom: 3px solid #222;
+}
+
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px;
+    gap: 30px;
+}
+
+.card {
+    width: 180px;
+    background: #eaeaea;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    padding: 10px;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card .top-icons {
+    text-align: right;
+    margin-bottom: 5px;
+    padding-right: 5px;
+    min-height: 24px;
+}
+
+.card img {
+    width: 100%;
+    height: 230px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.card h4 {
+    margin: 10px 0 5px;
+    font-size: 16px;
+}
+
+.card p {
+    font-size: 14px;
+    color: #555;
+    margin: 2px 0;
+}
+
+.card a {
+    font-size: 13px;
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.card a:hover {
+    text-decoration: underline;
+}
+
+.card .countdown {
+    font-size: 13px;
+    font-weight: bold;
+    color: #000000;
+    margin-top: 5px;
+}
+
+.card i.fas.fa-pen {
+    position: relative;
+    top: 0;
+    right: 0;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.card .fa-pen:hover {
+    color: #00eeff !important;
+}
+
+.delete-btn {
+    transition: color 0.2s;
+}
+
+.delete-btn:hover {
+    color: rgb(255, 0, 0) !important;
+}
+
+.edit-btn {
+    transition: color 0.2s;
+}
+
+.edit-btn:hover {
+    color: #007BFF;
+}
+
+#modal-delete .modal {
+    padding: 15px;
+    min-width: 200px;
+    max-width: 300px;
+    max-height: 150px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#modal-delete button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+#modal-delete button:first-of-type {
+    background: crimson;
+    color: white;
+}
+
+#modal-delete button:last-of-type {
+    background: #ccc;
+}
+
+.admin-card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+}
+
+.admin-card {
+    width: 90%;
+    max-width: 500px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    padding: 15px 20px;
+    text-align: left;
+}
+
+.admin-card h4 {
+    margin: 0 0 8px;
+    font-size: 18px;
+}
+
+.admin-card p {
+    margin: 0;
+    color: #555;
+}
+
+.admin-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.trash-icon {
+    cursor: pointer;
+    color: #c00;
+}
+
+.admin-crown {
+    margin-left: 8px;
+    color: gold;
+    font-size: 16px;
+    vertical-align: middle;
+}
+
+h2 {
+    text-align: center;
+    margin-top: 20px;
+    color: white;
+}
+
+#user-search {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 14px;
+    width: 100%;
+    max-width: 320px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#user-search:focus {
+    border-color: #888;
+    box-shadow: 0 0 0 2px rgba(100, 100, 255, 0.2);
+}
+
+#user-role-filter {
+    display: block;
+    margin: 10px auto 20px;
+    padding: 10px 14px;
+    width: 100%;
+    max-width: 320px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#user-role-filter:focus {
+    border-color: #888;
+    box-shadow: 0 0 0 2px rgba(100, 100, 255, 0.2);
+}
+
+.profile-card {
+    max-width: 400px;
+    margin: 30px auto;
+    padding: 20px 30px;
+    background-color: #1e1e1e;
+    border: 2px solid #00bcd4;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0, 188, 212, 0.4);
+    text-align: left;
+}
+
+.profile-card p {
+    font-size: 1.1em;
+    margin: 10px 0;
+}
+
+.profile-card .info-line {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.profile-card .label {
+    color: white;
+    font-weight: bold;
+    font-size: 1.6em;
+    min-width: 110px;
+    text-align: right;
+}
+
+.profile-card .value {
+    font-weight: bold;
+    font-size: 1.6em;
+    color: #00bcd4;
+    text-align: left;
+}
+
+#profile-count {
+    font-style: italic;
+}
+
+#profile-search {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 14px;
+    width: 100%;
+    max-width: 320px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#profile-search:focus {
+    border-color: #888;
+    box-shadow: 0 0 0 2px rgba(100, 100, 255, 0.2);
+}
+
+#profile-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    background-color: #f0f0f0;
+    padding: 15px 20px;
+    border: 1px solid #000000;
+    border-radius: 8px;
+    max-width: 550px;
+    margin: 10px auto 20px;
+    font-size: 14px;
+    color: #000;
+}
+
+#user-content-count {
+    color: white;
+    text-align: center;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 150px;
+}
+
+.filter-group strong {
+    margin-bottom: 6px;
+}
+
+.filter-group label {
+    margin-bottom: 4px;
+    cursor: pointer;
+}
+
+#global-search-container {
+    text-align: center;
+    margin: 10px auto;
+}
+
+#global-search {
+    padding: 8px 12px;
+    font-size: 16px;
+    width: 90%;
+    max-width: 400px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+#notif-email {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+#modal-notif h2 {
+    color: black;
+}
+
+.error-msg {
+    color: crimson;
+    font-size: 0.9em;
+    margin: 5px 0;
+}
+
+.notif-info {
+    color: #00bcd4;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+#notif-email-saved-container {
+    color: black;
+    text-align: center;
+    margin-top: 10px;
+}
+
+#notif-email-saved {
+    color: #00bcd4;
+    font-weight: bold;
+}
+
+#notif-btn.subscribed {
+    color: limegreen;
+}
