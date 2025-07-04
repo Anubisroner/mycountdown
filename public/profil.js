@@ -1,21 +1,32 @@
-// 🌐 API locale pour développement
-// const API_BASE = "http://localhost:3000";
-
-// 🌍 API distante pour production
-const API_BASE = "https://mycountdown.onrender.com";
-
-
 let userContent = [];
 
 function loadUserContent() {
     const userId = localStorage.getItem("userId");
-    if (!userId) return;
+    const username = localStorage.getItem("username");
+
+    if (!userId || !username) {
+        document.getElementById("profile-username").textContent = "Pseudo : non connecté";
+        document.getElementById("profile-count").textContent = "Ajouts : 0";
+        return;
+    }
+
+    // Afficher le pseudo
+    document.getElementById("profile-username").textContent = `${username}`;
 
     fetch(`${API_BASE}/api/releases/all`)
         .then(res => res.json())
         .then(data => {
             userContent = data.filter(item => item.userId === userId);
+
+            // Afficher le nombre d'ajouts
+            document.getElementById("profile-count").textContent = `${userContent.length}`;
+
+            // Afficher les cartes
             filterAndDisplayUserContent();
+        })
+        .catch(err => {
+            console.error("Erreur chargement contenus utilisateur :", err);
+            document.getElementById("profile-count").textContent = "Erreur de chargement";
         });
 }
 
@@ -164,6 +175,7 @@ function displayUserContent(data) {
 window.onload = () => {
     updateLoginIcon();
     loadUserContent();
+
 
     const searchInput = document.getElementById("profile-search");
     if (searchInput) {

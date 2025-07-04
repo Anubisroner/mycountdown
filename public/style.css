@@ -6,6 +6,12 @@ body {
     background-size: cover;
 }
 
+.hidden-form {
+    position: absolute;
+    left: -9999px;
+    visibility: hidden;
+}
+
 header {
     display: flex;
     justify-content: space-between;

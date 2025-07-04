@@ -43,13 +43,13 @@ function switchForm(target) {
     const logTab = document.getElementById("tab-login");
 
     if (target === "login") {
-        regForm.style.display = "none";
-        logForm.style.display = "block";
+        regForm.classList.add("hidden-form");
+        logForm.classList.remove("hidden-form");
         regTab.classList.remove("active");
         logTab.classList.add("active");
     } else {
-        logForm.style.display = "none";
-        regForm.style.display = "block";
+        logForm.classList.add("hidden-form");
+        regForm.classList.remove("hidden-form");
         logTab.classList.remove("active");
         regTab.classList.add("active");
     }

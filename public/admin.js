@@ -1,10 +1,3 @@
-// 🌐 API locale pour développement
-// const API_BASE = "http://localhost:3000";
-
-// 🌍 API distante pour production
-const API_BASE = "https://mycountdown.onrender.com";
-
-
 let allUsers = [];
 
 async function loadUsers() {

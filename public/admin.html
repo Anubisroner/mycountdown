@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
   <meta charset="UTF-8">
-  <title>Admin</title>
+  <title>MyCountdown - Admin</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://kit.fontawesome.com/a0a392fad6.js" crossorigin="anonymous"></script>
 </head>
-
 <body>
+
+  <!-- Header avec filtres + actions -->
   <header>
     <div class="left">
       <i class="fas fa-home" id="home"></i>
@@ -18,7 +18,7 @@
       <span class="filter-btn" data-type="SERIE">SÉRIES</span>
       <span class="filter-btn" data-type="JEU">JEUX</span>
       <span class="filter-btn" data-type="UNKNOWN_DATE">DATE INCONNUE</span>
-      <span class="filter-btn" data-type="ALREADY_RELEASED">DEJA SORTIE</span>
+      <span class="filter-btn" data-type="ALREADY_RELEASED">DÉJÀ SORTIE</span>
     </div>
     <div class="right">
       <i class="fas fa-question-circle" id="help"></i>
@@ -31,19 +31,20 @@
     </div>
   </header>
 
+  <!-- Barre de recherche globale -->
   <div id="global-search-container" style="display: none;">
     <input type="text" id="global-search" placeholder="Rechercher un contenu..." />
   </div>
 
-  <div id="platform-filters" style="display: none;" class="filters subfilters">
+  <!-- Filtres plateforme (si type = JEU) -->
+  <div id="platform-filters" class="filters subfilters" style="display: none;">
     <span class="platform-btn" data-platform="PC">PC</span>
     <span class="platform-btn" data-platform="XBOX">XBOX</span>
     <span class="platform-btn" data-platform="PS5">PS5</span>
     <span class="platform-btn" data-platform="SWITCH">SWITCH</span>
   </div>
 
-
-  <!-- Modale aide -->
+  <!-- Modale aide / tutoriel -->
   <div class="modal-background" id="modal-help" style="display: none;">
     <div class="modal">
       <span class="close" onclick="closeModal('modal-help')">×</span>
@@ -66,45 +67,26 @@
     </div>
   </div>
 
-  <!-- Modale login -->
-  <!-- <div class="modal-background" id="modal-login" style="display: none;">
-    <div class="modal">
-      <span class="close" onclick="closeModal('modal-login')">×</span>
-      <div class="tabs">
-        <div class="tab active" id="tab-register" onclick="switchForm('register')">Inscription</div>
-        <div class="tab" id="tab-login" onclick="switchForm('login')">Connexion</div>
-      </div>
-      <div id="form-register">
-        <input type="text" id="reg-username" placeholder="Pseudo">
-        <input type="password" id="reg-password" placeholder="Mot de passe">
-        <button onclick="register()">S'inscrire</button>
-        <p id="reg-msg"></p>
-      </div>
-      <div id="form-login" style="display: none;">
-        <input type="text" id="log-username" placeholder="Pseudo">
-        <input type="password" id="log-password" placeholder="Mot de passe">
-        <button onclick="login()">Se connecter</button>
-        <p id="log-msg"></p>
-      </div>
-    </div>
-  </div> -->
-
-  <!-- Modale ajout -->
+  <!-- Modale ajout de contenu -->
   <div class="modal-background" id="modal-add" style="display: none;">
     <div class="modal">
       <span class="close" onclick="closeModal('modal-add')">×</span>
       <h3>Ajouter un contenu</h3>
+
       <input type="text" id="add-name" placeholder="Nom" maxlength="43">
+
       <select id="add-type" onchange="handleTypeChange()">
         <option value="">-- Type --</option>
         <option value="FILM">FILM</option>
         <option value="SERIE">SÉRIE</option>
         <option value="JEU">JEU</option>
       </select>
-      <div id="saison-field" style="display:none;">
+
+      <div id="saison-field" style="display: none;">
         <input type="number" id="add-season" placeholder="Saison">
       </div>
-      <div id="platform-field" style="display:none;">
+
+      <div id="platform-field" style="display: none;">
         <select id="add-platform">
           <option value="">-- Plateforme --</option>
           <option value="PC">PC</option>
@@ -113,6 +95,7 @@
           <option value="SWITCH">SWITCH</option>
         </select>
       </div>
+
       <input type="text" id="add-cover" placeholder="Lien jaquette">
       <input type="text" id="add-url" placeholder="URL (Steam, JVC, AlloCiné...)">
       <input type="date" id="add-date">
@@ -121,6 +104,7 @@
     </div>
   </div>
 
+  <!-- Zone admin : recherche et filtres utilisateurs -->
   <h2>Utilisateurs</h2>
   <input type="text" id="user-search" placeholder="Rechercher un utilisateur...">
   <select id="user-role-filter">
@@ -129,8 +113,10 @@
     <option value="users">Utilisateurs</option>
   </select>
 
+  <!-- Liste dynamique des utilisateurs (cartes) -->
   <div id="user-list" class="admin-card-container"></div>
 
+  <!-- Modale suppression utilisateur -->
   <div class="modal-background" id="modal-delete-user" style="display: none;">
     <div class="modal small">
       <span class="close" onclick="closeModal('modal-delete-user')">×</span>
@@ -144,8 +130,9 @@
   <!-- Modale newsletter -->
   <div class="modal-background" id="modal-notif">
     <div class="modal">
-      <span class="close" onclick="closeModal('modal-notif')">&times;</span>
+      <span class="close" onclick="closeModal('modal-notif')">×</span>
       <h2 style="color: black;">Newsletter</h2>
+
       <p id="notif-email-info" class="notif-info hidden"></p>
 
       <div id="notif-inscription">
@@ -164,8 +151,8 @@
     </div>
   </div>
 
+  <!-- JS global + spécifique admin -->
   <script src="script.js"></script>
   <script src="admin.js"></script>
 </body>
-
 </html>
