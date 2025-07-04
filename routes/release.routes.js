@@ -32,19 +32,7 @@ router.post("/add", async (req, res) => {
 router.get("/all", async (req, res) => {
   try {
     const releases = await Release.find().sort({ releaseDate: 1 });
-
-    const formatted = releases.map(r => ({
-      nom: r.name,
-      type: r.type,
-      saison: r.season,
-      plateforme: r.platform,
-      jaquette: r.cover,
-      lien: r.url,
-      date: r.releaseDate,
-      user_id: r.userId
-    }));
-
-    res.json(formatted);
+    res.json(releases);
   } catch (err) {
     res.status(500).json({ message: "Erreur lors de la récupération", error: err.message });
   }
