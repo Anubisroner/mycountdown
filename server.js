@@ -4,7 +4,12 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-app.use(cors());
+
+// Autoriser uniquement Netlify
+app.use(cors({
+  origin: "https://mycountdown1.netlify.app"
+}));
+
 app.use(express.json());
 app.use(express.static("public"));
 
@@ -22,24 +27,8 @@ const releaseRoutes = require("./routes/release.routes");
 app.use("/api/releases", releaseRoutes);
 app.use("/api/notifications", require("./routes/notifications.routes"));
 
-// Route pour tester l'envoi de mail
-// const path = require('path');
-// const mailTestRoute = require('./routes/mailTestRoute');
-// app.use(mailTestRoute);
-// app.use('/mailTest', express.static(path.join(__dirname, 'public', 'mailTest')));
-
-// const sendDailyMails = require('./public/sendDailyMails.js');
-
-// app.post('/api/test-mail', async (req, res) => {
-//   try {
-//     await sendDailyMails();
-//     res.sendStatus(200);
-//   } catch (err) {
-//     console.error('Erreur envoi mail test:', err);
-//     res.sendStatus(500);
-//   }
-// });
-
+// Route GET /api/all
+const Release = require("./models/release.model"); // Ajouté ici si ce n’était pas déjà importé
 
 app.get("/api/all", async (req, res) => {
   try {
@@ -62,8 +51,6 @@ app.get("/api/all", async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
-
-
 
 // Lancement serveur
 const PORT = process.env.PORT || 3000;
