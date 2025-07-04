@@ -28,22 +28,24 @@ app.use("/api/releases", releaseRoutes);
 app.use("/api/notifications", require("./routes/notifications.routes"));
 
 // Route GET /api/all
-const Release = require("./models/release.model"); // Ajouté ici si ce n’était pas déjà importé
+const Release = require("./models/release.model");
 
 app.get("/api/all", async (req, res) => {
   try {
     const releases = await Release.find().sort({ releaseDate: 1 });
 
-    const formatted = releases.map(r => ({
-      nom: r.name,
-      type: r.type,
-      saison: r.season,
-      plateforme: r.platform,
-      jaquette: r.cover,
-      lien: r.url,
-      date: r.releaseDate,
-      user_id: r.userId
-    }));
+    const formatted = releases.map(r => {
+      return {
+        nom: r.name,
+        type: r.type,
+        saison: r.type === "SERIE" ? r.season : undefined,
+        plateforme: r.type === "JEU" ? r.platform : undefined,
+        jaquette: r.cover,
+        lien: r.url,
+        date: r.releaseDate,
+        user_id: r.userId
+      };
+    });
 
     res.json(formatted);
   } catch (err) {
