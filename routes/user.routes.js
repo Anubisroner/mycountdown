@@ -80,21 +80,33 @@ router.get("/admin/users", isAdminMiddleware, async (req, res) => {
 
 // Supprimer uniquement l’utilisateur
 router.delete("/admin/user/:id", isAdminMiddleware, async (req, res) => {
-  await User.findByIdAndDelete(req.params.id);
-  res.json({ message: "Utilisateur supprimé" });
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: "Utilisateur supprimé" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur suppression utilisateur", error: err.message });
+  }
 });
 
 // Supprimer uniquement les ajouts
 router.delete("/admin/user/:id/releases", isAdminMiddleware, async (req, res) => {
-  await Release.deleteMany({ userId: req.params.id });
-  res.json({ message: "Ajouts supprimés" });
+  try {
+    await Release.deleteMany({ userId: req.params.id });
+    res.json({ message: "Ajouts supprimés" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur suppression ajouts", error: err.message });
+  }
 });
 
 // Supprimer utilisateur + ses ajouts
 router.delete("/admin/user/:id/full", isAdminMiddleware, async (req, res) => {
-  await User.findByIdAndDelete(req.params.id);
-  await Release.deleteMany({ userId: req.params.id });
-  res.json({ message: "Utilisateur et ajouts supprimés" });
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    await Release.deleteMany({ userId: req.params.id });
+    res.json({ message: "Utilisateur et ajouts supprimés" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur suppression totale", error: err.message });
+  }
 });
 
 

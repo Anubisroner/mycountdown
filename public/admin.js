@@ -236,19 +236,35 @@ function confirmUserDeletion(id, name) {
 
 async function deleteUser(mode) {
   if (!deleteUserId) return;
+
   let url = `/api/admin/user/${deleteUserId}`;
   if (mode === "releases") url += "/releases";
   if (mode === "full") url += "/full";
 
-  const res = await fetch(url, {
-    method: "DELETE",
-    headers: { "x-user-id": localStorage.getItem("userId") }
-  });
+  try {
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: { "x-user-id": localStorage.getItem("userId") }
+    });
 
-  const data = await res.json();
-  closeModal("modal-delete-user");
-  deleteUserId = null;
-  loadUsers();
+    let data = {};
+    try {
+      data = await res.json(); // tente de parser
+    } catch (err) {
+      console.warn("Réponse non JSON :", err);
+    }
+
+    if (res.ok) {
+      closeModal("modal-delete-user");
+      deleteUserId = null;
+      loadUsers();
+    } else {
+      console.error("Erreur suppression :", data?.message || res.statusText);
+    }
+
+  } catch (err) {
+    console.error("Erreur réseau :", err);
+  }
 }
 
 function filterAndDisplayUsers() {
