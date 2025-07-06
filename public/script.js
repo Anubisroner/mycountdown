@@ -134,7 +134,6 @@ async function login(username = null, password = null) {
     if (res.ok) {
         localStorage.setItem("username", username);
         localStorage.setItem("userId", data.userId);
-        localStorage.setItem("isAdmin", data.isAdmin);
         closeModal("modal-login");
         updateLoginIcon();
         loadContent();
@@ -168,13 +167,13 @@ async function submitContent() {
         return;
     }
 
+    // Ne PAS inclure userId dans le body (sécurité)
     const payload = {
         name,
         type,
         cover,
         url,
-        releaseDate: releaseDate || null,
-        userId
+        releaseDate: releaseDate || null
     };
 
     if (type === "SERIE") payload.season = Number(season);
@@ -184,13 +183,19 @@ async function submitContent() {
     if (editId) {
         res = await fetch(`${API_BASE}/api/releases/update/${editId}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "x-user-id": userId
+            },
             body: JSON.stringify(payload)
         });
     } else {
         res = await fetch(`${API_BASE}/api/releases/add`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "x-user-id": userId
+            },
             body: JSON.stringify(payload)
         });
     }
@@ -202,50 +207,45 @@ async function submitContent() {
         closeModal("modal-add");
         resetAddForm();
 
-        // Recharge le bon contenu selon la page
         if (typeof loadContent === "function") loadContent();
         if (typeof loadUserContent === "function") loadUserContent();
     }
 }
 
 // === Mise à jour des icônes selon l'état ===
-function updateLoginIcon() {
+async function updateLoginIcon() {
     const icon = document.getElementById("login");
     const addBtn = document.getElementById("add-btn");
     const adminBtn = document.getElementById("admin-btn");
     const profileBtn = document.getElementById("profile-btn");
     const notifBtn = document.getElementById("notif-btn");
 
-    // Profil
-    if (profileBtn) {
-        profileBtn.style.display = isConnected() ? "inline-block" : "none";
+    const userId = localStorage.getItem("userId");
+    const isConnected = !!userId;
+
+    if (profileBtn) profileBtn.style.display = isConnected ? "inline-block" : "none";
+    if (notifBtn) notifBtn.style.display = isConnected ? "inline-block" : "none";
+    if (addBtn) addBtn.style.display = isConnected ? "inline-block" : "none";
+
+    if (icon) {
+        icon.className = isConnected ? "fas fa-right-from-bracket" : "fas fa-right-to-bracket";
+        icon.style.color = isConnected ? "crimson" : "green";
+        icon.title = isConnected ? "Déconnexion" : "Connexion";
     }
 
-    // Admin
     if (adminBtn) {
-        adminBtn.style.display =
-            isConnected() && localStorage.getItem("isAdmin") === "true"
-                ? "inline-block"
-                : "none";
-    }
+        if (!userId) {
+            adminBtn.style.display = "none";
+            return;
+        }
 
-    // Notifications (cloche)
-    if (notifBtn) {
-        notifBtn.style.display = isConnected() ? "inline-block" : "none";
-
-        if (isConnected()) {
-            const userId = localStorage.getItem("userId");
-
-            fetch(`${API_BASE}/api/notifications/status/${userId}`)
-                .then(res => res.json())
-                .then(data => {
-                    notifBtn.style.color = data.subscribed ? "limegreen" : "white";
-                })
-                .catch(() => {
-                    notifBtn.style.color = "white";
-                });
-        } else {
-            notifBtn.style.color = "white";
+        try {
+            const res = await fetch(`/api/users/check-admin/${userId}`);
+            const data = await res.json();
+            adminBtn.style.display = res.ok && data.isAdmin ? "inline-block" : "none";
+        } catch (err) {
+            console.error("Erreur vérification admin :", err);
+            adminBtn.style.display = "none";
         }
     }
 
@@ -723,14 +723,13 @@ function displayContent(data) {
 
         const currentUserId = localStorage.getItem("userId");
         const isOwner = item.userId === currentUserId;
-        const isAdmin = localStorage.getItem("isAdmin") === "true";
 
-        const showEditDelete = isOwner || isAdmin;
-
+        // ❌ on ne lit plus isAdmin depuis le localStorage
+        // ✅ seul le propriétaire verra les boutons
         const topRight = document.createElement("div");
         topRight.className = "top-icons";
 
-        if (showEditDelete) {
+        if (isOwner) {
             const deleteBtn = document.createElement("i");
             deleteBtn.className = "fas fa-trash delete-btn";
             deleteBtn.style.cursor = "pointer";

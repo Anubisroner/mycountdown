@@ -109,5 +109,16 @@ router.delete("/admin/user/:id/full", isAdminMiddleware, async (req, res) => {
   }
 });
 
+router.get("/check-admin/:id", async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
+        res.json({ isAdmin: user.isAdmin });
+    } catch (err) {
+        res.status(500).json({ message: "Erreur serveur", error: err.message });
+    }
+});
+
+
 
 module.exports = router;
