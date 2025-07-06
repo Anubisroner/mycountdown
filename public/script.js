@@ -5,6 +5,8 @@
 const API_BASE = "https://mycountdown.onrender.com";
 
 
+
+
 // === Connexion / Déconnexion ===
 function isConnected() {
     return !!localStorage.getItem("userId");
@@ -213,6 +215,7 @@ async function submitContent() {
 }
 
 // === Mise à jour des icônes selon l'état ===
+
 async function updateLoginIcon() {
     const icon = document.getElementById("login");
     const addBtn = document.getElementById("add-btn");
@@ -221,7 +224,7 @@ async function updateLoginIcon() {
     const notifBtn = document.getElementById("notif-btn");
 
     const userId = localStorage.getItem("userId");
-    const isConnected = !!userId;
+    isConnected = !!userId;
 
     if (profileBtn) profileBtn.style.display = isConnected ? "inline-block" : "none";
     if (notifBtn) notifBtn.style.display = isConnected ? "inline-block" : "none";
