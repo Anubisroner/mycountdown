@@ -243,12 +243,13 @@ async function updateLoginIcon() {
         }
 
         try {
-            const res = await fetch(`/api/users/check-admin/${userId}`, {
+            const res = await fetch(`${API_BASE}/api/users/check-admin/${userId}`, {
                 headers: {
                     "x-user-id": userId
                 }
             });
             const data = await res.json();
+            console.log("Check admin response :", data);
             adminBtn.style.display = res.ok && data.isAdmin ? "inline-block" : "none";
         } catch (err) {
             console.error("Erreur vérification admin :", err);
