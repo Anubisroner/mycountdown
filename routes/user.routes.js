@@ -52,7 +52,7 @@ router.post("/login", async (req, res) => {
   res.json({
     message: "Connexion réussie",
     userId: user._id,
-    isAdmin: user.isAdmin
+    isAdmin: !!user.isAdmin
   });
 });
 
@@ -82,9 +82,9 @@ router.get("/admin/users", isAdminMiddleware, async (req, res) => {
 router.delete("/admin/user/:id", isAdminMiddleware, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
-    res.json({ message: "Utilisateur supprimé" });
+    return res.json({ message: "Utilisateur supprimé" });
   } catch (err) {
-    res.status(500).json({ message: "Erreur suppression utilisateur", error: err.message });
+    return res.status(500).json({ message: "Erreur suppression utilisateur", error: err.message });
   }
 });
 

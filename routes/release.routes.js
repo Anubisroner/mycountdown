@@ -2,13 +2,36 @@ const express = require("express");
 const router = express.Router();
 const Release = require("../models/release.model");
 
+const User = require("../models/user.model");
+
+async function isOwnerOrAdmin(req, res, next) {
+  try {
+    const userId = req.headers["x-user-id"];
+    if (!userId) return res.status(401).json({ message: "Non autorisé" });
+
+    const release = await Release.findById(req.params.id);
+    if (!release) return res.status(404).json({ message: "Contenu introuvable" });
+
+    if (release.userId.toString() === userId) return next();
+
+    const user = await User.findById(userId);
+    if (user?.isAdmin) return next();
+
+    return res.status(403).json({ message: "Accès refusé" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+}
+
+
 // ➕ Ajouter une sortie (film/série/jeu)
 router.post("/add", async (req, res) => {
   try {
-    const { name, type, season, platform, cover, url, releaseDate, userId } = req.body;
+    const { name, type, season, platform, cover, url, releaseDate } = req.body;
+    const userId = req.headers["x-user-id"];
 
-    if (!name || !type || !cover || !url || !userId) {
-      return res.status(400).json({ message: "Champs requis manquants." });
+    if (!userId || !name || !type || !cover || !url) {
+      return res.status(400).json({ message: "Champs requis manquants ou non autorisé." });
     }
 
     const newRelease = await Release.create({
@@ -24,7 +47,7 @@ router.post("/add", async (req, res) => {
 
     res.json({ message: "Ajout réussi", release: newRelease });
   } catch (err) {
-    console.error("Erreur lors de l'ajout :", err); // 🪵 trace utile
+    console.error("Erreur lors de l'ajout :", err);
     res.status(500).json({ message: "Erreur serveur", error: err.message });
   }
 });
@@ -47,10 +70,9 @@ router.get("/check-name", async (req, res) => {
 });
 
 
-router.put("/update/:id", async (req, res) => {
+router.put("/update/:id", isOwnerOrAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-
     const updatedData = { ...req.body };
     delete updatedData.userId;
 
@@ -63,11 +85,12 @@ router.put("/update/:id", async (req, res) => {
   }
 });
 
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete/:id", isOwnerOrAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await Release.findByIdAndDelete(id);
     if (!deleted) return res.status(404).json({ message: "Contenu introuvable" });
+
     res.json({ message: "Contenu supprimé" });
   } catch (err) {
     res.status(500).json({ message: "Erreur suppression", error: err.message });

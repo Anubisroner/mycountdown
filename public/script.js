@@ -722,13 +722,15 @@ function displayContent(data) {
         card.className = "card";
 
         const currentUserId = localStorage.getItem("userId");
-        const isAdmin = localStorage.getItem("isAdmin") === "true";
         const isOwner = item.userId === currentUserId;
+        const isAdmin = localStorage.getItem("isAdmin") === "true";
+
+        const showEditDelete = isOwner || isAdmin;
 
         const topRight = document.createElement("div");
         topRight.className = "top-icons";
 
-        if (isAdmin || isOwner) {
+        if (showEditDelete) {
             const deleteBtn = document.createElement("i");
             deleteBtn.className = "fas fa-trash delete-btn";
             deleteBtn.style.cursor = "pointer";
