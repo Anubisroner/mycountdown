@@ -7,7 +7,7 @@ const API_BASE = "https://mycountdown.onrender.com";
 
 // === Connexion / Déconnexion ===
 function isConnected() {
-    return localStorage.getItem("userId") !== null;
+    return !!localStorage.getItem("userId");
 }
 
 function logout() {
@@ -240,7 +240,11 @@ async function updateLoginIcon() {
         }
 
         try {
-            const res = await fetch(`/api/users/check-admin/${userId}`);
+            const res = await fetch(`/api/users/check-admin/${userId}`, {
+                headers: {
+                    "x-user-id": userId
+                }
+            });
             const data = await res.json();
             adminBtn.style.display = res.ok && data.isAdmin ? "inline-block" : "none";
         } catch (err) {
@@ -250,7 +254,7 @@ async function updateLoginIcon() {
     }
 
     // Connexion / Déconnexion
-    if (isConnected()) {
+    if (isConnected) {
         icon.className = "fas fa-right-from-bracket";
         icon.style.color = "crimson";
         icon.title = "Déconnexion";
@@ -432,7 +436,7 @@ window.onload = () => {
     const loginIcon = document.getElementById("login");
     if (loginIcon) {
         loginIcon.onclick = () => {
-            if (isConnected()) {
+            if (isConnected) {
                 logout();
             } else {
                 resetLoginForm();
@@ -550,7 +554,7 @@ document.getElementById("help").onclick = () => openModal("modal-help");
 // Login ou logout selon état
 const loginIcon = document.getElementById("login");
 loginIcon.onclick = () => {
-    if (isConnected()) {
+    if (isConnected) {
         logout();
     } else {
         resetLoginForm();
