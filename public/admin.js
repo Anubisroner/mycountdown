@@ -58,10 +58,26 @@ window.onload = () => {
   document.getElementById("user-search").addEventListener("input", filterAndDisplayUsers);
   document.getElementById("user-role-filter").addEventListener("change", filterAndDisplayUsers);
 
-  if (localStorage.getItem("isAdmin") !== "true") {
+  const userId = localStorage.getItem("userId");
+  if (!userId) {
     window.location.href = "/";
     return;
   }
+
+  fetch(`${API_BASE}/api/users/check-admin/${userId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (!data.isAdmin) {
+        window.location.href = "/";
+        return;
+      }
+      updateLoginIcon();
+      loadUsers();
+    })
+    .catch(err => {
+      console.error("Erreur vérification admin :", err);
+      window.location.href = "/";
+    });
 
   updateLoginIcon();
   loadUsers();

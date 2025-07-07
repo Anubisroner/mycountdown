@@ -4,8 +4,7 @@
 // 🌍 API distante pour la production
 const API_BASE = "https://mycountdown.onrender.com";
 
-
-
+let isAdmin = false;
 
 // === Connexion / Déconnexion ===
 function isConnected() {
@@ -99,7 +98,7 @@ async function register() {
     }
 
 
-    const res = await fetch(`${API_BASE}/api/register`, {
+    const res = await fetch(`${API_BASE}/api/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
@@ -124,7 +123,7 @@ async function login(username = null, password = null) {
         return;
     }
 
-    const res = await fetch(`${API_BASE}/api/login`, {
+    const res = await fetch(`${API_BASE}/api/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
@@ -249,7 +248,8 @@ async function updateLoginIcon() {
                 }
             });
             const data = await res.json();
-            adminBtn.style.display = res.ok && data.isAdmin ? "inline-block" : "none";
+            isAdmin = res.ok && data.isAdmin;
+            adminBtn.style.display = isAdmin ? "inline-block" : "none";
         } catch (err) {
             console.error("Erreur vérification admin :", err);
             adminBtn.style.display = "none";
@@ -278,8 +278,8 @@ function handleTypeChange() {
 }
 
 // === Initialisation globale ===
-window.onload = () => {
-    updateLoginIcon();
+window.onload = async () => {
+    await updateLoginIcon();
     loadContent();
 
     const searchIcon = document.getElementById("search-icon");
@@ -731,12 +731,10 @@ function displayContent(data) {
         const currentUserId = localStorage.getItem("userId");
         const isOwner = item.userId === currentUserId;
 
-        // ❌ on ne lit plus isAdmin depuis le localStorage
-        // ✅ seul le propriétaire verra les boutons
         const topRight = document.createElement("div");
         topRight.className = "top-icons";
 
-        if (isOwner) {
+        if (isOwner || isAdmin) {
             const deleteBtn = document.createElement("i");
             deleteBtn.className = "fas fa-trash delete-btn";
             deleteBtn.style.cursor = "pointer";
