@@ -22,7 +22,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // Routes API
 const userRoutes = require("./routes/user.routes");
-app.use("/api", userRoutes);
+app.use("/api/users", userRoutes);
 const releaseRoutes = require("./routes/release.routes");
 app.use("/api/releases", releaseRoutes);
 app.use("/api/notifications", require("./routes/notifications.routes"));
