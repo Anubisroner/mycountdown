@@ -28,7 +28,7 @@ router.post("/register", async (req, res) => {
   // ✅ Vérification reCAPTCHA
   if (!token) return res.status(400).json({ message: "Captcha requis." });
 
-  const secretKey = "6LdGC3srAAAAAORFddT33kGHh683gqTo2N-YCHbp";
+  const secretKey = "6LfUF3srAAAAAFvvqT_MCkZTWNwC4YLNwiegLSH7";
 
   try {
     const response = await axios.post(`https://www.google.com/recaptcha/api/siteverify`, null, {
