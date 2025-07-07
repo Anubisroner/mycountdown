@@ -100,25 +100,25 @@ async function register() {
         return;
     }
 
-    // 🔒 Récupérer le token reCAPTCHA
-    const captchaToken = grecaptcha.getResponse();
-    if (!captchaToken) {
-        msg.textContent = "Merci de valider le captcha.";
+    // ✅ Récupère le token reCAPTCHA
+    const token = grecaptcha.getResponse();
+    if (!token) {
+        msg.textContent = "Veuillez valider le captcha.";
         return;
     }
 
     const res = await fetch(`${API_BASE}/api/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, token: captchaToken })
+        body: JSON.stringify({ username, password, token })
     });
 
     const data = await res.json();
     msg.textContent = data.message;
 
     if (res.ok) {
-        grecaptcha.reset(); // 🔁 Réinitialise le captcha
-        await login(username, password); // 🔐 Auto-login
+        grecaptcha.reset(); // Réinitialise le captcha
+        await login(username, password); // Auto login
     }
 }
 

@@ -3,6 +3,8 @@ const router = express.Router();
 const User = require("../models/user.model");
 const Release = require("../models/release.model");
 const bcrypt = require("bcrypt");
+const axios = require("axios");
+
 
 // ✅ Middleware pour vérifier si admin
 async function isAdminMiddleware(req, res, next) {
