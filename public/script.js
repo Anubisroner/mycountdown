@@ -5,6 +5,8 @@
 const API_BASE = "https://mycountdown.onrender.com";
 
 
+const userRoutes = require("./routes/user.routes");
+app.use("/api/users", userRoutes);
 
 
 // === Connexion / Déconnexion ===
