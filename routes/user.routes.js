@@ -22,8 +22,6 @@ async function isAdminMiddleware(req, res, next) {
 }
 
 // 🔐 INSCRIPTION
-const axios = require("axios"); // Ajoute ça en haut si ce n’est pas déjà présent
-
 router.post("/register", async (req, res) => {
   const { username, password, token } = req.body;
 
