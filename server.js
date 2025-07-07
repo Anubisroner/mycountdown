@@ -22,10 +22,11 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // Routes API
 const userRoutes = require("./routes/user.routes");
-app.use("/api/users", userRoutes);
 const releaseRoutes = require("./routes/release.routes");
+app.use("/api/users", userRoutes);
 app.use("/api/releases", releaseRoutes);
 app.use("/api/notifications", require("./routes/notifications.routes"));
+app.use("/api/admin", require("./routes/admin.routes"));
 
 // Route GET /api/all
 const Release = require("./models/release.model");
