@@ -226,7 +226,26 @@ async function updateLoginIcon() {
     isConnected = !!userId;
 
     if (profileBtn) profileBtn.style.display = isConnected ? "inline-block" : "none";
-    if (notifBtn) notifBtn.style.display = isConnected ? "inline-block" : "none";
+    if (notifBtn) {
+        notifBtn.style.display = isConnected ? "inline-block" : "none";
+
+        // Vérifie l'état d’inscription newsletter
+        if (isConnected) {
+            try {
+                const res = await fetch(`${API_BASE}/api/notifications/status/${userId}`);
+                const data = await res.json();
+                if (res.ok && data.subscribed) {
+                    notifBtn.style.color = "#0f0"; // ✅ Cloche verte
+                } else {
+                    notifBtn.style.color = "white"; // ❌ Pas inscrit
+                }
+            } catch (err) {
+                console.error("Erreur vérif cloche newsletter :", err);
+            }
+        } else {
+            notifBtn.style.color = "white";
+        }
+    }
     if (addBtn) addBtn.style.display = isConnected ? "inline-block" : "none";
 
     if (icon) {

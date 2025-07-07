@@ -22,7 +22,7 @@ async function isAdminMiddleware(req, res, next) {
 // 🔐 INSCRIPTION
 router.post("/register", async (req, res) => {
   const { username, password } = req.body;
-  const exists = await User.findOne({ username });
+  const exists = await User.findOne({ username: { $regex: `^${username}$`, $options: "i" } });
   if (exists) return res.status(409).json({ message: "Pseudo déjà pris" });
 
   if (username.length > 15) {
