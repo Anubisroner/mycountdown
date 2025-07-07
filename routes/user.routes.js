@@ -4,7 +4,7 @@ const User = require("../models/user.model");
 const Release = require("../models/release.model");
 const bcrypt = require("bcrypt");
 
-// ✅ Middleware interne pour vérifier si admin
+// ✅ Middleware pour vérifier si admin
 async function isAdminMiddleware(req, res, next) {
   try {
     const userId = req.headers["x-user-id"];
@@ -56,7 +56,7 @@ router.post("/login", async (req, res) => {
   });
 });
 
-// 👑 Route admin : lister tous les utilisateurs + nb de contenus
+// 👑 Admin - Liste des utilisateurs avec compteur de contenus
 router.get("/admin/users", isAdminMiddleware, async (req, res) => {
   try {
     const users = await User.find().lean();
@@ -78,8 +78,8 @@ router.get("/admin/users", isAdminMiddleware, async (req, res) => {
   }
 });
 
-// Supprimer uniquement l’utilisateur
-router.delete("/users/admin/user/:id", isAdminMiddleware, async (req, res) => {
+// 🗑️ Supprimer uniquement l'utilisateur
+router.delete("/admin/user/:id", isAdminMiddleware, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
     return res.json({ message: "Utilisateur supprimé" });
@@ -88,8 +88,8 @@ router.delete("/users/admin/user/:id", isAdminMiddleware, async (req, res) => {
   }
 });
 
-// Supprimer uniquement les ajouts
-router.delete("/users/admin/user/:id/releases", isAdminMiddleware, async (req, res) => {
+// 🧹 Supprimer uniquement les ajouts
+router.delete("/admin/user/:id/releases", isAdminMiddleware, async (req, res) => {
   try {
     await Release.deleteMany({ userId: req.params.id });
     res.json({ message: "Ajouts supprimés" });
@@ -98,8 +98,8 @@ router.delete("/users/admin/user/:id/releases", isAdminMiddleware, async (req, r
   }
 });
 
-// Supprimer utilisateur + ses ajouts
-router.delete("/users/admin/user/:id/full", isAdminMiddleware, async (req, res) => {
+// 💣 Supprimer l'utilisateur + ses ajouts
+router.delete("/admin/user/:id/full", isAdminMiddleware, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
     await Release.deleteMany({ userId: req.params.id });
@@ -109,6 +109,7 @@ router.delete("/users/admin/user/:id/full", isAdminMiddleware, async (req, res) 
   }
 });
 
+// 🔍 Vérifier si admin
 router.get("/check-admin/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -121,7 +122,5 @@ router.get("/check-admin/:id", async (req, res) => {
     res.status(500).json({ isAdmin: false, error: "Erreur serveur", details: err.message });
   }
 });
-
-
 
 module.exports = router;

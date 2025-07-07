@@ -171,7 +171,7 @@ window.onload = () => {
 
   const loginIcon = document.getElementById("login");
   loginIcon.onclick = () => {
-    if (isConnected()) {
+    if (localStorage.getItem("userId")) {
       logout();
     } else {
       resetLoginForm();
@@ -265,7 +265,7 @@ async function deleteUser(mode) {
 
     let data = {};
     try {
-      data = await res.json(); // tente de parser
+      data = await res.json();
     } catch (err) {
       console.warn("Réponse non JSON :", err);
     }
