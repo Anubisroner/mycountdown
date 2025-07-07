@@ -85,7 +85,10 @@ async function register() {
     const password = document.getElementById("reg-password").value.trim();
     const msg = document.getElementById("reg-msg");
 
-    if (!username || !password) return msg.textContent = "Champs requis.";
+    if (!username || !password) {
+        msg.textContent = "Champs requis.";
+        return;
+    }
 
     if (username.length > 15) {
         msg.textContent = "Le pseudo ne doit pas dépasser 15 caractères.";
@@ -97,18 +100,25 @@ async function register() {
         return;
     }
 
+    // 🔒 Récupérer le token reCAPTCHA
+    const captchaToken = grecaptcha.getResponse();
+    if (!captchaToken) {
+        msg.textContent = "Merci de valider le captcha.";
+        return;
+    }
 
     const res = await fetch(`${API_BASE}/api/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password, token: captchaToken })
     });
 
     const data = await res.json();
     msg.textContent = data.message;
 
     if (res.ok) {
-        await login(username, password);
+        grecaptcha.reset(); // 🔁 Réinitialise le captcha
+        await login(username, password); // 🔐 Auto-login
     }
 }
 

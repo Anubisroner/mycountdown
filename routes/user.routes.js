@@ -20,9 +20,33 @@ async function isAdminMiddleware(req, res, next) {
 }
 
 // 🔐 INSCRIPTION
+const axios = require("axios"); // Ajoute ça en haut si ce n’est pas déjà présent
+
 router.post("/register", async (req, res) => {
-  const { username, password } = req.body;
-  const exists = await User.findOne({ username: { $regex: `^${username}$`, $options: "i" } });
+  const { username, password, token } = req.body;
+
+  // ✅ Vérification reCAPTCHA
+  if (!token) return res.status(400).json({ message: "Captcha requis." });
+
+  const secretKey = "6LdGC3srAAAAAORFddT33kGHh683gqTo2N-YCHbp";
+
+  try {
+    const response = await axios.post(`https://www.google.com/recaptcha/api/siteverify`, null, {
+      params: {
+        secret: secretKey,
+        response: token
+      }
+    });
+
+    if (!response.data.success) {
+      return res.status(400).json({ message: "Échec du captcha." });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: "Erreur vérification captcha", error: err.message });
+  }
+
+  // ✅ Pseudo déjà utilisé (insensible à la casse)
+  const exists = await User.findOne({ username: { $regex: new RegExp("^" + username + "$", "i") } });
   if (exists) return res.status(409).json({ message: "Pseudo déjà pris" });
 
   if (username.length > 15) {
