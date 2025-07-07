@@ -253,7 +253,7 @@ function confirmUserDeletion(id, name) {
 async function deleteUser(mode) {
   if (!deleteUserId) return;
 
-  let url = `${API_BASE}/api/users/admin/user/${deleteUserId}`;
+  let url = `${API_BASE}/api/admin/user/${deleteUserId}`;
   if (mode === "releases") url += "/releases";
   if (mode === "full") url += "/full";
 
