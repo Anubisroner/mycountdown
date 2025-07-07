@@ -193,7 +193,7 @@ window.onload = () => {
     const loginIcon = document.getElementById("login");
     if (loginIcon) {
         loginIcon.onclick = () => {
-            if (isConnected()) logout();
+            if (isConnected) logout();
             else {
                 resetLoginForm();
                 switchForm("register");

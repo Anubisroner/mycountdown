@@ -145,6 +145,19 @@ async function login(username = null, password = null) {
     if (res.ok) {
         localStorage.setItem("username", username);
         localStorage.setItem("userId", data.userId);
+
+        // ✅ Vérifie si l'utilisateur est admin
+        const check = await fetch(`${API_BASE}/api/users/check-admin/${data.userId}`, {
+            headers: {
+                "x-user-id": data.userId
+            }
+        });
+
+        const checkData = await check.json();
+        if (check.ok && checkData.isAdmin) {
+            isAdmin = true;
+        }
+
         closeModal("modal-login");
         updateLoginIcon();
         loadContent();
@@ -722,7 +735,10 @@ async function confirmDelete() {
     if (!deleteId) return;
 
     const res = await fetch(`${API_BASE}/api/releases/delete/${deleteId}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: {
+            "x-user-id": localStorage.getItem("userId")
+        }
     });
 
     const data = await res.json();
