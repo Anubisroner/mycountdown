@@ -79,7 +79,7 @@ router.get("/admin/users", isAdminMiddleware, async (req, res) => {
 });
 
 // Supprimer uniquement l’utilisateur
-router.delete("/admin/user/:id", isAdminMiddleware, async (req, res) => {
+router.delete("/users/admin/user/:id", isAdminMiddleware, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
     return res.json({ message: "Utilisateur supprimé" });
@@ -89,7 +89,7 @@ router.delete("/admin/user/:id", isAdminMiddleware, async (req, res) => {
 });
 
 // Supprimer uniquement les ajouts
-router.delete("/admin/user/:id/releases", isAdminMiddleware, async (req, res) => {
+router.delete("/users/admin/user/:id/releases", isAdminMiddleware, async (req, res) => {
   try {
     await Release.deleteMany({ userId: req.params.id });
     res.json({ message: "Ajouts supprimés" });
@@ -99,7 +99,7 @@ router.delete("/admin/user/:id/releases", isAdminMiddleware, async (req, res) =>
 });
 
 // Supprimer utilisateur + ses ajouts
-router.delete("/admin/user/:id/full", isAdminMiddleware, async (req, res) => {
+router.delete("/users/admin/user/:id/full", isAdminMiddleware, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
     await Release.deleteMany({ userId: req.params.id });
