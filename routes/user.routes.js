@@ -24,18 +24,28 @@ async function isAdminMiddleware(req, res, next) {
 // 🔐 INSCRIPTION
 router.post("/register", async (req, res) => {
   console.log("POST /register", req.body);
+
   try {
     const { username, password, token } = req.body;
 
     if (!token) return res.status(400).json({ message: "Captcha requis." });
 
     const secretKey = process.env.RECAPTCHA_SECRET;
-    const response = await axios.post(`https://www.google.com/recaptcha/api/siteverify`, null, {
-      params: { secret: secretKey, response: token }
-    });
+
+    const response = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify`,
+      null,
+      {
+        params: { secret: secretKey, response: token }
+      }
+    );
+
+    // 🔍 Log temporaire pour debug
+    console.log("=== reCAPTCHA Response ===");
+    console.log(response.data);
 
     if (!response.data.success) {
-      return res.status(400).json({ message: "Échec du captcha." });
+      return res.status(400).json({ message: "Échec du captcha.", details: response.data });
     }
 
     // ➕ Vérifie username / password
