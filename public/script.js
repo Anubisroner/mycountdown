@@ -294,17 +294,17 @@ async function updateLoginIcon() {
 }
 
 // Connexion / Déconnexion
-if (isConnectedUser) {
-    icon.className = "fas fa-right-from-bracket";
-    icon.style.color = "crimson";
-    icon.title = "Déconnexion";
-    if (addBtn) addBtn.style.display = "inline-block";
-} else {
-    icon.className = "fas fa-right-to-bracket";
-    icon.style.color = "green";
-    icon.title = "Connexion";
-    if (addBtn) addBtn.style.display = "none";
-}
+// if (isConnectedUser) {
+//     icon.className = "fas fa-right-from-bracket";
+//     icon.style.color = "crimson";
+//     icon.title = "Déconnexion";
+//     if (addBtn) addBtn.style.display = "inline-block";
+// } else {
+//     icon.className = "fas fa-right-to-bracket";
+//     icon.style.color = "green";
+//     icon.title = "Connexion";
+//     if (addBtn) addBtn.style.display = "none";
+// }
 
 // === Changement des champs selon le type ===
 function handleTypeChange() {
