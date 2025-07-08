@@ -5,6 +5,7 @@
 const API_BASE = "https://mycountdown.onrender.com";
 
 let isAdmin = false;
+let isConnectedUser = false;
 
 // === Connexion / Déconnexion ===
 function isConnected() {
@@ -239,7 +240,6 @@ async function submitContent() {
 }
 
 // === Mise à jour des icônes selon l'état ===
-
 async function updateLoginIcon() {
     const icon = document.getElementById("login");
     const addBtn = document.getElementById("add-btn");
@@ -248,72 +248,62 @@ async function updateLoginIcon() {
     const notifBtn = document.getElementById("notif-btn");
 
     const userId = localStorage.getItem("userId");
-    isConnected = !!userId;
+    const token = localStorage.getItem("token");
+    const isConnectedUser = !!token;
 
-    if (profileBtn) profileBtn.style.display = isConnected ? "inline-block" : "none";
+    if (profileBtn) profileBtn.style.display = isConnectedUser ? "inline-block" : "none";
     if (notifBtn) {
-        notifBtn.style.display = isConnected ? "inline-block" : "none";
+        notifBtn.style.display = isConnectedUser ? "inline-block" : "none";
 
-        // Vérifie l'état d’inscription newsletter
-        if (isConnected) {
+        if (isConnectedUser && userId) {
             try {
                 const res = await fetch(`${API_BASE}/api/notifications/status/${userId}`);
                 const data = await res.json();
-                if (res.ok && data.subscribed) {
-                    notifBtn.style.color = "#0f0"; // ✅ Cloche verte
-                } else {
-                    notifBtn.style.color = "white"; // ❌ Pas inscrit
-                }
-            } catch (err) {
-                console.error("Erreur vérif cloche newsletter :", err);
+                notifBtn.style.color = (res.ok && data.subscribed) ? "#0f0" : "white";
+            } catch {
+                notifBtn.style.color = "white";
             }
         } else {
             notifBtn.style.color = "white";
         }
     }
-    if (addBtn) addBtn.style.display = isConnected ? "inline-block" : "none";
+
+    if (addBtn) addBtn.style.display = isConnectedUser ? "inline-block" : "none";
 
     if (icon) {
-        icon.className = isConnected ? "fas fa-right-from-bracket" : "fas fa-right-to-bracket";
-        icon.style.color = isConnected ? "crimson" : "green";
-        icon.title = isConnected ? "Déconnexion" : "Connexion";
+        icon.className = isConnectedUser ? "fas fa-right-from-bracket" : "fas fa-right-to-bracket";
+        icon.style.color = isConnectedUser ? "crimson" : "green";
+        icon.title = isConnectedUser ? "Déconnexion" : "Connexion";
     }
 
     if (adminBtn) {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-            adminBtn.style.display = "none";
-        } else {
+        adminBtn.style.display = "none";
+        if (isConnectedUser && token) {
             try {
                 const res = await fetch(`${API_BASE}/api/users/check-admin`, {
-                    headers: {
-                        Authorization: token
-                    }
+                    headers: { Authorization: token }
                 });
-
                 const data = await res.json();
                 isAdmin = res.ok && data.isAdmin;
-                adminBtn.style.display = isAdmin ? "inline-block" : "none";
-            } catch (err) {
-                console.error("Erreur vérification admin :", err);
+                if (isAdmin) adminBtn.style.display = "inline-block";
+            } catch {
                 adminBtn.style.display = "none";
             }
         }
     }
+}
 
-    // Connexion / Déconnexion
-    if (isConnected) {
-        icon.className = "fas fa-right-from-bracket";
-        icon.style.color = "crimson";
-        icon.title = "Déconnexion";
-        if (addBtn) addBtn.style.display = "inline-block";
-    } else {
-        icon.className = "fas fa-right-to-bracket";
-        icon.style.color = "green";
-        icon.title = "Connexion";
-        if (addBtn) addBtn.style.display = "none";
-    }
+// Connexion / Déconnexion
+if (isConnectedUser) {
+    icon.className = "fas fa-right-from-bracket";
+    icon.style.color = "crimson";
+    icon.title = "Déconnexion";
+    if (addBtn) addBtn.style.display = "inline-block";
+} else {
+    icon.className = "fas fa-right-to-bracket";
+    icon.style.color = "green";
+    icon.title = "Connexion";
+    if (addBtn) addBtn.style.display = "none";
 }
 
 // === Changement des champs selon le type ===
@@ -485,7 +475,7 @@ window.onload = async () => {
     const loginIcon = document.getElementById("login");
     if (loginIcon) {
         loginIcon.onclick = () => {
-            if (isConnected) {
+            if (isConnectedUser) {
                 logout();
             } else {
                 resetLoginForm();
@@ -603,7 +593,7 @@ document.getElementById("help").onclick = () => openModal("modal-help");
 // Login ou logout selon état
 const loginIcon = document.getElementById("login");
 loginIcon.onclick = () => {
-    if (isConnected) {
+    if (isConnectedUser) {
         logout();
     } else {
         resetLoginForm();

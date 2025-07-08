@@ -2,16 +2,28 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/user.model");
 const Release = require("../models/release.model");
+const jwt = require("jsonwebtoken");
+const SECRET_KEY = process.env.JWT_SECRET;
+
 
 // Vérifie si l'utilisateur est admin
 async function checkAdmin(req, res, next) {
-  const userId = req.headers["x-user-id"];
-  if (!userId) return res.status(403).json({ message: "Non autorisé" });
+  const token = req.headers.authorization;
+  if (!token) return res.status(403).json({ message: "Token manquant" });
 
-  const user = await User.findById(userId);
-  if (!user || !user.isAdmin) return res.status(403).json({ message: "Accès refusé" });
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    const user = await User.findById(decoded.userId);
+    if (!user || !user.isAdmin) {
+      return res.status(403).json({ message: "Accès refusé" });
+    }
 
-  next();
+    req.user = user; // on peut l’utiliser plus tard si besoin
+    next();
+  } catch (err) {
+    console.error("Erreur vérification token admin :", err.message);
+    return res.status(403).json({ message: "Token invalide ou expiré" });
+  }
 }
 
 // ✅ GET /api/admin/users

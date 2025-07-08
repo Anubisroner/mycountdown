@@ -1,5 +1,30 @@
 let allUsers = [];
 
+(async () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/users/check-admin`, {
+      headers: {
+        Authorization: token
+      }
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.isAdmin) {
+      window.location.href = "/";
+    }
+  } catch (err) {
+    console.error("Erreur vérification admin (admin.js) :", err);
+    window.location.href = "/";
+  }
+})();
+
+
 async function loadUsers() {
   const token = localStorage.getItem("token");
 
@@ -59,32 +84,6 @@ function displayUsers(users) {
 window.onload = () => {
   document.getElementById("user-search").addEventListener("input", filterAndDisplayUsers);
   document.getElementById("user-role-filter").addEventListener("change", filterAndDisplayUsers);
-
-  const token = localStorage.getItem("token");
-  if (!token) {
-    window.location.href = "/";
-    return;
-  }
-
-  fetch(`${API_BASE}/api/users/check-admin`, {
-    headers: { Authorization: token }
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (!data.isAdmin) {
-        window.location.href = "/";
-        return;
-      }
-      updateLoginIcon();
-      loadUsers();
-    })
-    .catch(err => {
-      console.error("Erreur vérification admin :", err);
-      window.location.href = "/";
-    });
-
-  updateLoginIcon();
-  loadUsers();
 
   const searchInput = document.getElementById("user-search");
   if (searchInput) {
