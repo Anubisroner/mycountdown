@@ -41,11 +41,6 @@ header i {
     transition: transform 0.2s, color 0.2s;
 }
 
-header i:hover {
-    transform: scale(1.2);
-    color: #aaa;
-}
-
 /* ========== FILTRES (catégories & plateformes) ========== */
 .filters {
     display: flex;

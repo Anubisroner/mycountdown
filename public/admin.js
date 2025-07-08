@@ -1,6 +1,6 @@
 let allUsers = [];
 
-(async () => {
+async function checkAdminAccess() {
   const token = localStorage.getItem("token");
   if (!token) {
     window.location.href = "/";
@@ -17,12 +17,15 @@ let allUsers = [];
     const data = await res.json();
     if (!res.ok || !data.isAdmin) {
       window.location.href = "/";
+    } else {
+      // L'utilisateur est admin, on peut charger la page
+      loadUsers();
     }
   } catch (err) {
     console.error("Erreur vérification admin (admin.js) :", err);
     window.location.href = "/";
   }
-})();
+}
 
 
 async function loadUsers() {
@@ -35,6 +38,8 @@ async function loadUsers() {
   });
 
   allUsers = await res.json();
+  console.log("Utilisateurs reçus :", allUsers); // ← AJOUTE ÇA
+
   filterAndDisplayUsers();
 }
 
@@ -82,6 +87,8 @@ function displayUsers(users) {
 }
 
 window.onload = () => {
+  updateLoginIcon();
+  checkAdminAccess();
   document.getElementById("user-search").addEventListener("input", filterAndDisplayUsers);
   document.getElementById("user-role-filter").addEventListener("change", filterAndDisplayUsers);
 

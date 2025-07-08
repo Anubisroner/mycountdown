@@ -7,7 +7,13 @@ module.exports = async function verifyToken(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // contient { userId, isAdmin }
+
+    // Normalise le payload pour garantir .userId
+    req.user = {
+      userId: decoded.userId || decoded.id,
+      isAdmin: decoded.isAdmin || false
+    };
+
     next();
   } catch (err) {
     res.status(403).json({ message: "Token invalide", error: err.message });

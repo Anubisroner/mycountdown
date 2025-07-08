@@ -13,12 +13,13 @@ async function checkAdmin(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, SECRET_KEY);
-    const user = await User.findById(decoded.userId);
+    const user = await User.findById(decoded.id); // 🔧 correction ici
+
     if (!user || !user.isAdmin) {
       return res.status(403).json({ message: "Accès refusé" });
     }
 
-    req.user = user; // on peut l’utiliser plus tard si besoin
+    req.user = user;
     next();
   } catch (err) {
     console.error("Erreur vérification token admin :", err.message);

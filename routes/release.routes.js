@@ -10,7 +10,7 @@ async function isOwnerOrAdmin(req, res, next) {
     const release = await Release.findById(req.params.id);
     if (!release) return res.status(404).json({ message: "Contenu introuvable" });
 
-    const userId = req.user.userId;
+    const userId = req.user.userId || req.user.id;
     if (release.userId.toString() === userId || req.user.isAdmin) {
       return next();
     }
@@ -25,7 +25,7 @@ async function isOwnerOrAdmin(req, res, next) {
 router.post("/add", verifyToken, async (req, res) => {
   try {
     const { name, type, season, platform, cover, url, releaseDate } = req.body;
-    const userId = req.user.userId;
+    const userId = req.user.userId || req.user.id;
 
     if (!name || !type || !cover || !url) {
       return res.status(400).json({ message: "Champs requis manquants." });
@@ -96,6 +96,18 @@ router.get("/check-name", async (req, res) => {
 
   const found = await Release.findOne({ name });
   res.json({ exists: !!found });
+});
+
+// 🔐 Contenus d'un utilisateur connecté
+router.get("/user", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId || req.user.id;
+    const releases = await Release.find({ userId }).lean();
+    res.json(releases);
+  } catch (err) {
+    console.error("Erreur GET /releases/user :", err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
 });
 
 module.exports = router;

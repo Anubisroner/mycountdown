@@ -1,6 +1,8 @@
 let userContent = [];
 
 function loadUserContent() {
+    console.log("loadUserContent() démarrée");
+
     const userId = localStorage.getItem("userId");
     const username = localStorage.getItem("username");
 
@@ -13,15 +15,24 @@ function loadUserContent() {
     // Afficher le pseudo
     document.getElementById("profile-username").textContent = `${username}`;
 
-    fetch(`${API_BASE}/api/releases/all`)
+    console.log("Token utilisé pour releases/user :", token);
+    const payloadBase64 = token.split('.')[1];
+    const payloadDecoded = JSON.parse(atob(payloadBase64));
+    console.log("Contenu du token :", payloadDecoded);
+
+
+    fetch(`${API_BASE}/api/releases/user`, {
+        headers: {
+            Authorization: localStorage.getItem("token")
+        }
+    })
         .then(res => res.json())
         .then(data => {
-            userContent = data.filter(item => item.userId?.toString() === userId);
 
-            // Afficher le nombre d'ajouts
-            document.getElementById("profile-count").textContent = `${userContent.length}`;
+            console.log("Contenus reçus du serveur :", data);
+            userContent = data;
 
-            // Afficher les cartes
+            document.getElementById("profile-count").textContent = `${userContent.length} ajout(s)`;
             filterAndDisplayUserContent();
         })
         .catch(err => {
@@ -159,9 +170,6 @@ function displayUserContent(data) {
             setInterval(() => updateCountdown(countdown, new Date(item.releaseDate)), 1000);
         }
 
-        document.getElementById("profile-username").textContent = localStorage.getItem("username");
-        document.getElementById("profile-count").textContent = `${userContent.length} ajout(s)`;
-
         card.appendChild(title);
         card.appendChild(type);
         if (extra.textContent) card.appendChild(extra);
@@ -173,6 +181,10 @@ function displayUserContent(data) {
 }
 
 window.onload = () => {
+    console.log("profil.js chargé");
+    console.log("Appel de loadUserContent()");
+
+
     updateLoginIcon();
     loadUserContent();
 

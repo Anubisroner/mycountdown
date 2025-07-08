@@ -1,8 +1,8 @@
 // 🌐 API locale pour le développement
-// const API_BASE = "http://localhost:3000";
+const API_BASE = "http://localhost:3000";
 
 // 🌍 API distante pour la production
-const API_BASE = "https://mycountdown.onrender.com";
+// const API_BASE = "https://mycountdown.onrender.com";
 
 let isAdmin = false;
 
@@ -501,6 +501,9 @@ window.onload = async () => {
                 return;
             }
 
+            const userId = localStorage.getItem("userId");
+            if (!userId) return;
+
             const input = document.getElementById("notif-email");
             const msg = document.getElementById("notif-msg");
             const title = document.querySelector("#modal-notif h2");
@@ -518,7 +521,7 @@ window.onload = async () => {
             if (emailInfo) emailInfo.textContent = "";
 
             try {
-                const res = await fetch(`${API_BASE}/api/notifications/status`, {
+                const res = await fetch(`${API_BASE}/api/notifications/status/${userId}`, {
                     headers: { Authorization: token }
                 });
                 const data = await res.json();
@@ -942,6 +945,7 @@ async function submitNotification() {
 async function unsubscribeNotification() {
     const msg = document.getElementById("notif-msg");
     const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
 
     if (!token) return;
 
