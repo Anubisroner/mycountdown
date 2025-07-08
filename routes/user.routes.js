@@ -23,44 +23,42 @@ async function isAdminMiddleware(req, res, next) {
 
 // 🔐 INSCRIPTION
 router.post("/register", async (req, res) => {
-  const { username, password, token } = req.body;
-
-  // ✅ Vérification reCAPTCHA
-  if (!token) return res.status(400).json({ message: "Captcha requis." });
-
-  const secretKey = process.env.RECAPTCHA_SECRET;
-
   try {
+    const { username, password, token } = req.body;
+
+    if (!token) return res.status(400).json({ message: "Captcha requis." });
+
+    const secretKey = process.env.RECAPTCHA_SECRET;
     const response = await axios.post(`https://www.google.com/recaptcha/api/siteverify`, null, {
-      params: {
-        secret: secretKey,
-        response: token
-      }
+      params: { secret: secretKey, response: token }
     });
 
     if (!response.data.success) {
       return res.status(400).json({ message: "Échec du captcha." });
     }
+
+    // ➕ Vérifie username / password
+    if (!username || !password) {
+      return res.status(400).json({ message: "Champs requis." });
+    }
+
+    // ❌ Vérifie doublon
+    const existing = await User.findOne({ username });
+    if (existing) {
+      return res.status(409).json({ message: "Nom déjà pris." });
+    }
+
+    // 🔐 Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 💾 Création
+    const user = await User.create({ username, password: hashedPassword });
+
+    res.json({ message: "Inscription réussie", userId: user._id });
   } catch (err) {
-    return res.status(500).json({ message: "Erreur vérification captcha", error: err.message });
+    console.error("Erreur register :", err.message);
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
   }
-
-  // ✅ Pseudo déjà utilisé (insensible à la casse)
-  const exists = await User.findOne({ username: { $regex: new RegExp("^" + username + "$", "i") } });
-  if (exists) return res.status(409).json({ message: "Pseudo déjà pris" });
-
-  if (username.length > 15) {
-    return res.status(400).json({ message: "Le pseudo ne doit pas dépasser 15 caractères." });
-  }
-
-  if (password.length < 8 || password.length > 20) {
-    return res.status(400).json({ message: "Le mot de passe doit contenir entre 8 et 20 caractères." });
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-  await User.create({ username, password: hashedPassword });
-
-  res.json({ message: "Inscription réussie" });
 });
 
 // 🔐 CONNEXION
