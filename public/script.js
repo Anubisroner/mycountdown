@@ -5,7 +5,6 @@
 const API_BASE = "https://mycountdown.onrender.com";
 
 let isAdmin = false;
-let isConnectedUser = false;
 
 // === Connexion / Déconnexion ===
 function isConnected() {
@@ -13,11 +12,8 @@ function isConnected() {
 }
 
 function logout() {
-    localStorage.removeItem("username");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("isAdmin");
-    localStorage.removeItem("filter-type");
-    localStorage.removeItem("filter-platform");
+    localStorage.clear();
+    isAdmin = false;
     updateLoginIcon();
     window.location.href = "/";
 }
@@ -249,13 +245,13 @@ async function updateLoginIcon() {
 
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
-    const isConnectedUser = !!token;
+    const isConnected = !!token;
 
-    if (profileBtn) profileBtn.style.display = isConnectedUser ? "inline-block" : "none";
+    if (profileBtn) profileBtn.style.display = isConnected ? "inline-block" : "none";
     if (notifBtn) {
-        notifBtn.style.display = isConnectedUser ? "inline-block" : "none";
+        notifBtn.style.display = isConnected ? "inline-block" : "none";
 
-        if (isConnectedUser && userId) {
+        if (isConnected && userId) {
             try {
                 const res = await fetch(`${API_BASE}/api/notifications/status/${userId}`);
                 const data = await res.json();
@@ -268,17 +264,17 @@ async function updateLoginIcon() {
         }
     }
 
-    if (addBtn) addBtn.style.display = isConnectedUser ? "inline-block" : "none";
+    if (addBtn) addBtn.style.display = isConnected ? "inline-block" : "none";
 
     if (icon) {
-        icon.className = isConnectedUser ? "fas fa-right-from-bracket" : "fas fa-right-to-bracket";
-        icon.style.color = isConnectedUser ? "crimson" : "green";
-        icon.title = isConnectedUser ? "Déconnexion" : "Connexion";
+        icon.className = isConnected ? "fas fa-right-from-bracket" : "fas fa-right-to-bracket";
+        icon.style.color = isConnected ? "crimson" : "green";
+        icon.title = isConnected ? "Déconnexion" : "Connexion";
     }
 
     if (adminBtn) {
         adminBtn.style.display = "none";
-        if (isConnectedUser && token) {
+        if (isConnected && token) {
             try {
                 const res = await fetch(`${API_BASE}/api/users/check-admin`, {
                     headers: { Authorization: token }
@@ -294,7 +290,7 @@ async function updateLoginIcon() {
 }
 
 // Connexion / Déconnexion
-// if (isConnectedUser) {
+// if (isConnected) {
 //     icon.className = "fas fa-right-from-bracket";
 //     icon.style.color = "crimson";
 //     icon.title = "Déconnexion";
@@ -473,17 +469,17 @@ window.onload = async () => {
     if (help) help.onclick = () => openModal("modal-help");
 
     const loginIcon = document.getElementById("login");
-    if (loginIcon) {
-        loginIcon.onclick = () => {
-            if (isConnectedUser) {
-                logout();
-            } else {
-                resetLoginForm();
-                switchForm("register");
-                openModal("modal-login");
-            }
-        };
-    }
+    loginIcon.onclick = () => {
+        const isConnected = !!localStorage.getItem("token");
+
+        if (isConnected) {
+            logout();
+        } else {
+            resetLoginForm();
+            switchForm("register");
+            openModal("modal-login");
+        }
+    };
 
     const addBtn = document.getElementById("add-btn");
     if (addBtn) {
@@ -496,6 +492,15 @@ window.onload = async () => {
     const notifBtn = document.getElementById("notif-btn");
     if (notifBtn) {
         notifBtn.onclick = async () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                // Ouvre la modale login
+                resetLoginForm();
+                switchForm("register");
+                openModal("modal-login");
+                return;
+            }
+
             const input = document.getElementById("notif-email");
             const msg = document.getElementById("notif-msg");
             const title = document.querySelector("#modal-notif h2");
@@ -503,9 +508,6 @@ window.onload = async () => {
             const inscriptionBlock = document.getElementById("notif-inscription");
             const desinscriptionBlock = document.getElementById("notif-desinscription");
             const emailSaved = document.getElementById("notif-email-saved");
-
-            const userId = localStorage.getItem("userId");
-            if (!userId) return;
 
             // Réinitialisation
             if (input) input.value = "";
@@ -515,9 +517,10 @@ window.onload = async () => {
             }
             if (emailInfo) emailInfo.textContent = "";
 
-            // Vérifie l’inscription
             try {
-                const res = await fetch(`${API_BASE}/api/notifications/status/${userId}`);
+                const res = await fetch(`${API_BASE}/api/notifications/status`, {
+                    headers: { Authorization: token }
+                });
                 const data = await res.json();
                 const isSubscribed = res.ok && data.subscribed;
 
@@ -592,15 +595,17 @@ document.getElementById("help").onclick = () => openModal("modal-help");
 
 // Login ou logout selon état
 const loginIcon = document.getElementById("login");
-loginIcon.onclick = () => {
-    if (isConnectedUser) {
-        logout();
-    } else {
-        resetLoginForm();
-        switchForm("register");
-        openModal("modal-login");
-    }
-};
+if (loginIcon) {
+    loginIcon.onclick = () => {
+        if (localStorage.getItem("token")) {
+            logout();
+        } else {
+            resetLoginForm();
+            switchForm("register");
+            openModal("modal-login");
+        }
+    };
+}
 
 // Bouton ajout
 const addBtn = document.getElementById("add-btn");
@@ -909,10 +914,14 @@ async function submitNotification() {
         email
     };
 
+    const token = localStorage.getItem("token");
     const res = await fetch(`${API_BASE}/api/notifications`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: token
+        },
+        body: JSON.stringify({ email })
     });
 
     const data = await res.json();
@@ -931,10 +940,10 @@ async function submitNotification() {
 }
 
 async function unsubscribeNotification() {
-    const userId = localStorage.getItem("userId");
     const msg = document.getElementById("notif-msg");
+    const token = localStorage.getItem("token");
 
-    if (!userId) return;
+    if (!token) return;
 
     try {
         const res = await fetch(`${API_BASE}/api/notifications/${userId}`, {
