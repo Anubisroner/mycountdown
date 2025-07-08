@@ -1,8 +1,8 @@
 // 🌐 API locale pour le développement
-const API_BASE = "http://localhost:3000";
+// const API_BASE = "http://localhost:3000";
 
 // 🌍 API distante pour la production
-// const API_BASE = "https://mycountdown.onrender.com";
+const API_BASE = "https://mycountdown.onrender.com";
 
 let isAdmin = false;
 
