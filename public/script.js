@@ -8,7 +8,7 @@ let isAdmin = false;
 
 // === Connexion / Déconnexion ===
 function isConnected() {
-    return !!localStorage.getItem("userId");
+    return !!localStorage.getItem("token");
 }
 
 function logout() {
@@ -145,11 +145,13 @@ async function login(username = null, password = null) {
     if (res.ok) {
         localStorage.setItem("username", username);
         localStorage.setItem("userId", data.userId);
+        localStorage.setItem("token", data.token);
+
 
         // ✅ Vérifie si l'utilisateur est admin
-        const check = await fetch(`${API_BASE}/api/users/check-admin/${data.userId}`, {
+        const check = await fetch(`${API_BASE}/api/users/check-admin`, {
             headers: {
-                "x-user-id": data.userId
+                Authorization: data.token
             }
         });
 
@@ -173,10 +175,10 @@ async function submitContent() {
     const cover = document.getElementById("add-cover").value.trim();
     const url = document.getElementById("add-url").value.trim();
     const releaseDate = document.getElementById("add-date").value;
-    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
     const msg = document.getElementById("add-msg");
 
-    if (!name || !type || !cover || !url || !userId) {
+    if (!name || !type || !cover || !url || !token) {
         msg.textContent = "Tous les champs sont obligatoires sauf la date.";
         return;
     }
@@ -209,7 +211,7 @@ async function submitContent() {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "x-user-id": userId
+                Authorization: token
             },
             body: JSON.stringify(payload)
         });
@@ -218,7 +220,7 @@ async function submitContent() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-user-id": userId
+                Authorization: token
             },
             body: JSON.stringify(payload)
         });
@@ -278,23 +280,25 @@ async function updateLoginIcon() {
     }
 
     if (adminBtn) {
-        if (!userId) {
-            adminBtn.style.display = "none";
-            return;
-        }
+        const token = localStorage.getItem("token");
 
-        try {
-            const res = await fetch(`${API_BASE}/api/users/check-admin/${userId}`, {
-                headers: {
-                    "x-user-id": userId
-                }
-            });
-            const data = await res.json();
-            isAdmin = res.ok && data.isAdmin;
-            adminBtn.style.display = isAdmin ? "inline-block" : "none";
-        } catch (err) {
-            console.error("Erreur vérification admin :", err);
+        if (!token) {
             adminBtn.style.display = "none";
+        } else {
+            try {
+                const res = await fetch(`${API_BASE}/api/users/check-admin`, {
+                    headers: {
+                        Authorization: token
+                    }
+                });
+
+                const data = await res.json();
+                isAdmin = res.ok && data.isAdmin;
+                adminBtn.style.display = isAdmin ? "inline-block" : "none";
+            } catch (err) {
+                console.error("Erreur vérification admin :", err);
+                adminBtn.style.display = "none";
+            }
         }
     }
 
@@ -731,13 +735,14 @@ function resetAddForm() {
 
 // === Suppression des cards ===
 let deleteId = null;
+const token = localStorage.getItem("token");
 async function confirmDelete() {
     if (!deleteId) return;
 
     const res = await fetch(`${API_BASE}/api/releases/delete/${deleteId}`, {
         method: "DELETE",
         headers: {
-            "x-user-id": localStorage.getItem("userId")
+            Authorization: token
         }
     });
 

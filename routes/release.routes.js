@@ -1,21 +1,19 @@
 const express = require("express");
 const router = express.Router();
 const Release = require("../models/release.model");
-
 const User = require("../models/user.model");
+const verifyToken = require("../middleware/authMiddleware");
 
+// 🔐 Middleware propriétaire OU admin
 async function isOwnerOrAdmin(req, res, next) {
   try {
-    const userId = req.headers["x-user-id"];
-    if (!userId) return res.status(401).json({ message: "Non autorisé" });
-
     const release = await Release.findById(req.params.id);
     if (!release) return res.status(404).json({ message: "Contenu introuvable" });
 
-    if (release.userId.toString() === userId) return next();
-
-    const user = await User.findById(userId);
-    if (user?.isAdmin) return next();
+    const userId = req.user.userId;
+    if (release.userId.toString() === userId || req.user.isAdmin) {
+      return next();
+    }
 
     return res.status(403).json({ message: "Accès refusé" });
   } catch (err) {
@@ -23,15 +21,14 @@ async function isOwnerOrAdmin(req, res, next) {
   }
 }
 
-
-// ➕ Ajouter une sortie (film/série/jeu)
-router.post("/add", async (req, res) => {
+// ➕ Ajouter une sortie
+router.post("/add", verifyToken, async (req, res) => {
   try {
     const { name, type, season, platform, cover, url, releaseDate } = req.body;
-    const userId = req.headers["x-user-id"];
+    const userId = req.user.userId;
 
-    if (!userId || !name || !type || !cover || !url) {
-      return res.status(400).json({ message: "Champs requis manquants ou non autorisé." });
+    if (!name || !type || !cover || !url) {
+      return res.status(400).json({ message: "Champs requis manquants." });
     }
 
     const newRelease = await Release.create({
@@ -47,48 +44,29 @@ router.post("/add", async (req, res) => {
 
     res.json({ message: "Ajout réussi", release: newRelease });
   } catch (err) {
-    console.error("Erreur lors de l'ajout :", err);
     res.status(500).json({ message: "Erreur serveur", error: err.message });
   }
 });
 
-router.get("/all", async (req, res) => {
+// 🔁 Modifier
+router.put("/update/:id", verifyToken, isOwnerOrAdmin, async (req, res) => {
   try {
-    const releases = await Release.find().sort({ releaseDate: 1 });
-    res.json(releases);
-  } catch (err) {
-    res.status(500).json({ message: "Erreur lors de la récupération", error: err.message });
-  }
-});
-
-router.get("/check-name", async (req, res) => {
-  const name = req.query.name?.trim();
-  if (!name) return res.status(400).json({ exists: false });
-
-  const found = await Release.findOne({ name });
-  res.json({ exists: !!found });
-});
-
-
-router.put("/update/:id", isOwnerOrAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
     const updatedData = { ...req.body };
     delete updatedData.userId;
 
-    const updated = await Release.findByIdAndUpdate(id, updatedData, { new: true });
+    const updated = await Release.findByIdAndUpdate(req.params.id, updatedData, { new: true });
     if (!updated) return res.status(404).json({ message: "Contenu introuvable" });
 
     res.json({ message: "Contenu modifié", release: updated });
   } catch (err) {
-    res.status(500).json({ message: "Erreur lors de la mise à jour", error: err.message });
+    res.status(500).json({ message: "Erreur mise à jour", error: err.message });
   }
 });
 
-router.delete("/delete/:id", isOwnerOrAdmin, async (req, res) => {
+// ❌ Supprimer
+router.delete("/delete/:id", verifyToken, isOwnerOrAdmin, async (req, res) => {
   try {
-    const { id } = req.params;
-    const deleted = await Release.findByIdAndDelete(id);
+    const deleted = await Release.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: "Contenu introuvable" });
 
     res.json({ message: "Contenu supprimé" });
@@ -97,6 +75,23 @@ router.delete("/delete/:id", isOwnerOrAdmin, async (req, res) => {
   }
 });
 
+// 📦 Récupérer tous les contenus
+router.get("/all", async (req, res) => {
+  try {
+    const releases = await Release.find().sort({ releaseDate: 1 });
+    res.json(releases);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur récupération", error: err.message });
+  }
+});
 
+// 🔍 Vérif nom déjà existant
+router.get("/check-name", async (req, res) => {
+  const name = req.query.name?.trim();
+  if (!name) return res.status(400).json({ exists: false });
+
+  const found = await Release.findOne({ name });
+  res.json({ exists: !!found });
+});
 
 module.exports = router;

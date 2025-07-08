@@ -4,7 +4,7 @@ const User = require("../models/user.model");
 const Release = require("../models/release.model");
 const bcrypt = require("bcrypt");
 const axios = require("axios");
-
+const jwt = require("jsonwebtoken");
 
 // ✅ Middleware pour vérifier si admin
 async function isAdminMiddleware(req, res, next) {
@@ -73,10 +73,15 @@ router.post("/login", async (req, res) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return res.status(401).json({ message: "Identifiants incorrects" });
 
+  const token = jwt.sign(
+    { id: user._id, isAdmin: user.isAdmin },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
   res.json({
     message: "Connexion réussie",
-    userId: user._id,
-    isAdmin: !!user.isAdmin
+    token
   });
 });
 
@@ -134,17 +139,20 @@ router.delete("/admin/user/:id/full", isAdminMiddleware, async (req, res) => {
 });
 
 // 🔍 Vérifier si admin
-router.get("/check-admin/:id", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ isAdmin: false, error: "Utilisateur introuvable" });
-    }
+router.get("/check-admin", async (req, res) => {
+  const token = req.headers["authorization"];
 
-    res.json({ isAdmin: user.isAdmin });
+  if (!token) return res.status(401).json({ isAdmin: false, message: "Token manquant" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (!user) return res.status(404).json({ isAdmin: false, message: "Utilisateur introuvable" });
+
+    res.json({ isAdmin: !!user.isAdmin });
   } catch (err) {
-    res.status(500).json({ isAdmin: false, error: "Erreur serveur", details: err.message });
+    res.status(403).json({ isAdmin: false, message: "Token invalide", error: err.message });
   }
 });
-
 module.exports = router;
