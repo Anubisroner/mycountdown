@@ -78,10 +78,14 @@ router.delete("/delete/:id", verifyToken, isOwnerOrAdmin, async (req, res) => {
 // 📦 Récupérer tous les contenus
 router.get("/all", async (req, res) => {
   try {
-    const releases = await Release.find().sort({ releaseDate: 1 });
-    res.json(releases);
+    const releases = await Release.find();
+    const formatted = releases.map(r => ({
+      ...r.toObject(),
+      userId: r.userId.toString()
+    }));
+    res.json(formatted);
   } catch (err) {
-    res.status(500).json({ message: "Erreur récupération", error: err.message });
+    res.status(500).json({ message: "Erreur serveur" });
   }
 });
 

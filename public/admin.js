@@ -1,9 +1,11 @@
 let allUsers = [];
 
 async function loadUsers() {
+  const token = localStorage.getItem("token");
+
   const res = await fetch(`${API_BASE}/api/admin/users`, {
     headers: {
-      "x-user-id": localStorage.getItem("userId")
+      Authorization: token
     }
   });
 
@@ -58,13 +60,15 @@ window.onload = () => {
   document.getElementById("user-search").addEventListener("input", filterAndDisplayUsers);
   document.getElementById("user-role-filter").addEventListener("change", filterAndDisplayUsers);
 
-  const userId = localStorage.getItem("userId");
-  if (!userId) {
+  const token = localStorage.getItem("token");
+  if (!token) {
     window.location.href = "/";
     return;
   }
 
-  fetch(`${API_BASE}/api/users/check-admin/${userId}`)
+  fetch(`${API_BASE}/api/users/check-admin`, {
+    headers: { Authorization: token }
+  })
     .then(res => res.json())
     .then(data => {
       if (!data.isAdmin) {
@@ -261,7 +265,7 @@ async function deleteUser(mode) {
   try {
     const res = await fetch(url, {
       method: "DELETE",
-      headers: { "x-user-id": localStorage.getItem("userId") }
+      headers: { Authorization: localStorage.getItem("token") }
     });
 
     let data = {};
