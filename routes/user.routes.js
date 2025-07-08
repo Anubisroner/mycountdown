@@ -23,6 +23,7 @@ async function isAdminMiddleware(req, res, next) {
 
 // 🔐 INSCRIPTION
 router.post("/register", async (req, res) => {
+  console.log("POST /register", req.body);
   try {
     const { username, password, token } = req.body;
 
