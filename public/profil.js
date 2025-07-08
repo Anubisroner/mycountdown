@@ -16,7 +16,7 @@ function loadUserContent() {
     fetch(`${API_BASE}/api/releases/all`)
         .then(res => res.json())
         .then(data => {
-            userContent = data.filter(item => item.userId === userId);
+            userContent = data.filter(item => item.userId?.toString() === userId);
 
             // Afficher le nombre d'ajouts
             document.getElementById("profile-count").textContent = `${userContent.length}`;
