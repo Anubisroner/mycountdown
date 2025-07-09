@@ -4,35 +4,28 @@ const Notification = require("../models/Notification");
 const User = require("../models/user.model");
 const verifyToken = require("../middleware/authMiddleware");
 
-// ✅ INSCRIPTION à la newsletter (protégé par JWT)
+// 🔐 PROTÈGE L'INSCRIPTION
 router.post("/", verifyToken, async (req, res) => {
+  const { email } = req.body;
+  const userId = req.user.userId;
+
+  if (!email || !userId) {
+    return res.status(400).json({ message: "Champs requis manquants." });
+  }
+
   try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ message: "Email requis." });
-    }
-
-    const userId = req.user.userId;
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "Utilisateur introuvable." });
-    }
+    if (!user) return res.status(404).json({ message: "Utilisateur introuvable." });
 
     const alreadyExists = await Notification.findOne({ userId, email });
     if (alreadyExists) {
       return res.status(400).json({ message: "Déjà inscrit à la newsletter." });
     }
 
-    await Notification.create({
-      userId,
-      username: user.username,
-      email
-    });
-
+    await Notification.create({ userId, username: user.username, email });
     res.json({ message: "Inscription réussie à la newsletter." });
   } catch (err) {
-    console.error("Erreur inscription newsletter :", err);
+    console.error("Erreur newsletter :", err);
     res.status(500).json({ message: "Erreur serveur", error: err.message });
   }
 });
