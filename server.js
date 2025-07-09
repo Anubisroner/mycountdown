@@ -7,7 +7,9 @@ const app = express();
 
 // Autoriser uniquement Netlify
 app.use(cors({
-  origin: "https://mycountdown1.netlify.app"
+  origin: "https://mycountdown1.netlify.app",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
