@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Notification = require("../models/Notification");
 const User = require("../models/user.model");
-const verifyToken = require("../middlewares/authMiddleware");
+const verifyToken = require("../middleware/authMiddleware");
 
 // ✅ INSCRIPTION à la newsletter (protégé par JWT)
 router.post("/", verifyToken, async (req, res) => {
