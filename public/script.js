@@ -476,7 +476,7 @@ window.onload = async () => {
             logout();
         } else {
             resetLoginForm();
-            switchForm("register");
+            switchForm("login");
             openModal("modal-login");
         }
     };
@@ -911,34 +911,42 @@ async function submitNotification() {
         return;
     }
 
-    const payload = {
-        userId: localStorage.getItem("userId"),
-        username: localStorage.getItem("username"),
-        email
-    };
-
+    const userId = localStorage.getItem("userId");
+    const username = localStorage.getItem("username");
     const token = localStorage.getItem("token");
-    const res = await fetch(`${API_BASE}/api/notifications`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: token
-        },
-        body: JSON.stringify({ email })
-    });
 
-    const data = await res.json();
-    msg.style.color = res.ok ? "green" : "crimson";
-    msg.textContent = data.message;
+    if (!userId || !username || !token) {
+        msg.textContent = "Utilisateur non connecté.";
+        msg.style.color = "crimson";
+        return;
+    }
 
-    if (res.ok) {
-        localStorage.setItem("notif-email", email);
+    const payload = { userId, username, email };
 
-        // Mise à jour du header (cloche en vert)
-        if (typeof updateLoginIcon === "function") updateLoginIcon();
+    try {
+        const res = await fetch(`${API_BASE}/api/notifications`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token
+            },
+            body: JSON.stringify(payload)
+        });
 
-        // Ferme immédiatement la modale
-        closeModal("modal-notif");
+        const data = await res.json();
+
+        msg.style.color = res.ok ? "green" : "crimson";
+        msg.textContent = data.message;
+
+        if (res.ok) {
+            localStorage.setItem("notif-email", email);
+            if (typeof updateLoginIcon === "function") updateLoginIcon();
+            closeModal("modal-notif");
+        }
+    } catch (err) {
+        console.error("Erreur newsletter :", err);
+        msg.textContent = "Erreur lors de l'inscription.";
+        msg.style.color = "crimson";
     }
 }
 
