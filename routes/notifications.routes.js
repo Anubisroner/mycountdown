@@ -2,18 +2,18 @@ const express = require("express");
 const router = express.Router();
 const Notification = require("../models/Notification");
 const User = require("../models/user.model");
-const verifyToken = require("../middleware/authMiddleware");
-const jwt = require("jsonwebtoken");
+const verifyToken = require("../middlewares/authMiddleware");
 
+// ✅ INSCRIPTION à la newsletter (protégé par JWT)
 router.post("/", verifyToken, async (req, res) => {
   try {
     const { email } = req.body;
-    const { userId } = req.user;
 
-    if (!email || !userId) {
-      return res.status(400).json({ message: "Email ou utilisateur manquant." });
+    if (!email) {
+      return res.status(400).json({ message: "Email requis." });
     }
 
+    const userId = req.user.userId;
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "Utilisateur introuvable." });
@@ -24,7 +24,12 @@ router.post("/", verifyToken, async (req, res) => {
       return res.status(400).json({ message: "Déjà inscrit à la newsletter." });
     }
 
-    await Notification.create({ userId, username: user.username, email });
+    await Notification.create({
+      userId,
+      username: user.username,
+      email
+    });
+
     res.json({ message: "Inscription réussie à la newsletter." });
   } catch (err) {
     console.error("Erreur inscription newsletter :", err);
@@ -32,6 +37,7 @@ router.post("/", verifyToken, async (req, res) => {
   }
 });
 
+// ❌ DÉSINSCRIPTION
 router.delete("/:userId", async (req, res) => {
   try {
     const deleted = await Notification.findOneAndDelete({ userId: req.params.userId });
@@ -42,6 +48,7 @@ router.delete("/:userId", async (req, res) => {
   }
 });
 
+// ℹ️ VÉRIFIER INSCRIPTION
 router.get("/status/:userId", async (req, res) => {
   try {
     const notif = await Notification.findOne({ userId: req.params.userId });
