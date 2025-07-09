@@ -1,25 +1,17 @@
 const express = require("express");
 const router = express.Router();
 const Notification = require("../models/Notification");
-const User = require("../models/user.model"); // nécessaire pour retrouver le username
+const User = require("../models/user.model");
+const verifyToken = require("../middlewares/authMiddleware");
 const jwt = require("jsonwebtoken");
 
-// ✅ Inscription à la newsletter
-router.post("/", async (req, res) => {
-  const token = req.headers.authorization;
-
-  if (!token) {
-    return res.status(401).json({ message: "Token manquant." });
-  }
-
+router.post("/", verifyToken, async (req, res) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id || decoded.userId;
-
     const { email } = req.body;
+    const { userId } = req.user;
 
     if (!email || !userId) {
-      return res.status(400).json({ message: "Champs requis manquants." });
+      return res.status(400).json({ message: "Email ou utilisateur manquant." });
     }
 
     const user = await User.findById(userId);
@@ -27,23 +19,19 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ message: "Utilisateur introuvable." });
     }
 
-    const username = user.username;
-
     const alreadyExists = await Notification.findOne({ userId, email });
     if (alreadyExists) {
       return res.status(400).json({ message: "Déjà inscrit à la newsletter." });
     }
 
-    await Notification.create({ userId, username, email });
+    await Notification.create({ userId, username: user.username, email });
     res.json({ message: "Inscription réussie à la newsletter." });
-
   } catch (err) {
     console.error("Erreur inscription newsletter :", err);
     res.status(500).json({ message: "Erreur serveur", error: err.message });
   }
 });
 
-// ❌ Désinscription
 router.delete("/:userId", async (req, res) => {
   try {
     const deleted = await Notification.findOneAndDelete({ userId: req.params.userId });
@@ -54,7 +42,6 @@ router.delete("/:userId", async (req, res) => {
   }
 });
 
-// 🔍 Statut d’abonnement
 router.get("/status/:userId", async (req, res) => {
   try {
     const notif = await Notification.findOne({ userId: req.params.userId });
