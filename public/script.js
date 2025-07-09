@@ -921,7 +921,7 @@ async function submitNotification() {
         return;
     }
 
-    const payload = { userId, username, email };
+    const payload = { email };
 
     try {
         const res = await fetch(`${API_BASE}/api/notifications`, {
