@@ -3,6 +3,7 @@
 
 // 🌍 API distante pour la production
 const API_BASE = "https://mycountdown.onrender.com";
+console.log("🌐 API_BASE utilisée :", API_BASE);
 
 let isAdmin = false;
 
@@ -1064,4 +1065,4 @@ dynamicFilters.forEach(input => {
 });
 
 // Patch global pour supprimer le warning [Violation] sur mobile
-document.addEventListener("touchstart", function () {}, { passive: true });
+document.addEventListener("touchstart", function () { }, { passive: true });
