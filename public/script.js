@@ -1,8 +1,8 @@
 // 🌐 API locale pour le développement
-// const API_BASE = "http://localhost:3000";
+const API_BASE = "http://localhost:3000";
 
 // 🌍 API distante pour la production
-const API_BASE = "https://mycountdown.onrender.com";
+// const API_BASE = "https://mycountdown.onrender.com";
 
 let isAdmin = false;
 
@@ -140,21 +140,30 @@ async function login(username = null, password = null) {
     msg.textContent = data.message;
 
     if (res.ok) {
+        const decodedToken = JSON.parse(atob(data.token.split('.')[1]));
+
         localStorage.setItem("username", username);
-        localStorage.setItem("userId", data.userId);
+        localStorage.setItem("userId", decodedToken.userId);
         localStorage.setItem("token", data.token);
 
-
         // ✅ Vérifie si l'utilisateur est admin
-        const check = await fetch(`${API_BASE}/api/users/check-admin`, {
-            headers: {
-                Authorization: data.token
-            }
-        });
+        try {
+            const check = await fetch(`${API_BASE}/api/users/check-admin/${decodedToken.userId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${data.token}`
+                }
+            });
 
-        const checkData = await check.json();
-        if (check.ok && checkData.isAdmin) {
-            isAdmin = true;
+            if (check.ok) {
+                const checkData = await check.json();
+                if (checkData.isAdmin) {
+                    isAdmin = true;
+                }
+            }
+        } catch (err) {
+            console.warn("ℹ️ Utilisateur non admin (normal)");
         }
 
         closeModal("modal-login");
@@ -165,7 +174,15 @@ async function login(username = null, password = null) {
 
 // === Envoi d'un contenu vers l’API ===
 async function submitContent() {
+    const msg = document.getElementById("add-msg"); // ✅ doit être défini avant tout
     const name = document.getElementById("add-name").value.trim();
+
+    const nameRegex = /^[\wÀ-ÿ0-9 :\-]+$/;
+    if (!nameRegex.test(name)) {
+        msg.textContent = "Le nom contient des caractères non autorisés.";
+        return;
+    }
+
     const type = document.getElementById("add-type").value;
     const season = document.getElementById("add-season").value;
     const platform = document.getElementById("add-platform").value;
@@ -173,7 +190,6 @@ async function submitContent() {
     const url = document.getElementById("add-url").value.trim();
     const releaseDate = document.getElementById("add-date").value;
     const token = localStorage.getItem("token");
-    const msg = document.getElementById("add-msg");
 
     if (!name || !type || !cover || !url || !token) {
         msg.textContent = "Tous les champs sont obligatoires sauf la date.";
@@ -190,7 +206,6 @@ async function submitContent() {
         return;
     }
 
-    // Ne PAS inclure userId dans le body (sécurité)
     const payload = {
         name,
         type,
@@ -203,35 +218,40 @@ async function submitContent() {
     if (type === "JEU") payload.platform = platform;
 
     let res;
-    if (editId) {
-        res = await fetch(`${API_BASE}/api/releases/update/${editId}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: token
-            },
-            body: JSON.stringify(payload)
-        });
-    } else {
-        res = await fetch(`${API_BASE}/api/releases/add`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: token
-            },
-            body: JSON.stringify(payload)
-        });
-    }
+    try {
+        if (editId) {
+            res = await fetch(`${API_BASE}/api/releases/update/${editId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            res = await fetch(`${API_BASE}/api/releases/add`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+        }
 
-    const data = await res.json();
-    msg.textContent = data.message;
+        const data = await res.json();
+        msg.textContent = data.message;
 
-    if (res.ok) {
-        closeModal("modal-add");
-        resetAddForm();
+        if (res.ok) {
+            closeModal("modal-add");
+            resetAddForm();
 
-        if (typeof loadContent === "function") loadContent();
-        if (typeof loadUserContent === "function") loadUserContent();
+            if (typeof loadContent === "function") loadContent();
+            if (typeof loadUserContent === "function") loadUserContent();
+        }
+    } catch (err) {
+        msg.textContent = "Erreur lors de l'ajout du contenu.";
+        console.error(err);
     }
 }
 
@@ -275,9 +295,16 @@ async function updateLoginIcon() {
     if (adminBtn) {
         adminBtn.style.display = "none";
         if (isConnected && token) {
+
+            // console.log("🔍 Vérif admin depuis updateLoginIcon()");
+            // console.log("📤 userId :", userId);
+            // console.log("📤 token :", token);
+
             try {
-                const res = await fetch(`${API_BASE}/api/users/check-admin`, {
-                    headers: { Authorization: token }
+                const res = await fetch(`${API_BASE}/api/users/check-admin/${userId}`, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
                 });
                 const data = await res.json();
                 isAdmin = res.ok && data.isAdmin;
@@ -288,19 +315,6 @@ async function updateLoginIcon() {
         }
     }
 }
-
-// Connexion / Déconnexion
-// if (isConnected) {
-//     icon.className = "fas fa-right-from-bracket";
-//     icon.style.color = "crimson";
-//     icon.title = "Déconnexion";
-//     if (addBtn) addBtn.style.display = "inline-block";
-// } else {
-//     icon.className = "fas fa-right-to-bracket";
-//     icon.style.color = "green";
-//     icon.title = "Connexion";
-//     if (addBtn) addBtn.style.display = "none";
-// }
 
 // === Changement des champs selon le type ===
 function handleTypeChange() {
@@ -624,10 +638,18 @@ let allContent = [];
 
 async function loadContent() {
     const res = await fetch(`${API_BASE}/api/releases/all`);
+
+    if (!res.ok) {
+        console.error("Erreur lors du chargement des contenus :", res.status);
+        return;
+    }
+
     allContent = await res.json();
     let data = [...allContent];
 
     const container = document.getElementById("content-list");
+    if (!container) return;
+
     const filterType = localStorage.getItem("filter-type");
     const filterPlatform = localStorage.getItem("filter-platform");
 
@@ -737,21 +759,30 @@ const token = localStorage.getItem("token");
 async function confirmDelete() {
     if (!deleteId) return;
 
-    const res = await fetch(`${API_BASE}/api/releases/delete/${deleteId}`, {
-        method: "DELETE",
-        headers: {
-            Authorization: token
+    const token = localStorage.getItem("token");
+
+    try {
+        const res = await fetch(`${API_BASE}/api/releases/delete/${deleteId}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            closeModal("modal-delete");
+            deleteId = null;
+
+            // Recharge le contenu selon la page
+            if (typeof loadContent === "function") loadContent();
+            if (typeof loadUserContent === "function") loadUserContent();
+        } else {
+            alert("Erreur lors de la suppression : " + data.message);
         }
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-        closeModal("modal-delete");
-        deleteId = null;
-        loadContent();
-    } else {
-        alert("Erreur lors de la suppression : " + data.message);
+    } catch (err) {
+        console.error("Erreur suppression :", err);
     }
 }
 
@@ -903,34 +934,34 @@ async function checkNotificationStatus() {
 async function submitNotification() {
     const email = document.getElementById("notif-email").value.trim();
     const msg = document.getElementById("notif-msg");
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        msg.textContent = "Adresse email invalide.";
-        msg.style.color = "crimson";
-        return;
-    }
+    const emailInfo = document.getElementById("notif-email-info");
+    const title = document.querySelector("#modal-notif h2");
 
     const userId = localStorage.getItem("userId");
     const username = localStorage.getItem("username");
     const token = localStorage.getItem("token");
 
-    if (!userId || !username || !token) {
-        msg.textContent = "Utilisateur non connecté.";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
         msg.style.color = "crimson";
+        msg.textContent = "Adresse email invalide.";
         return;
     }
 
-    const payload = { email };
+    if (!token) {
+        msg.style.color = "crimson";
+        msg.textContent = "Token manquant, veuillez vous reconnecter.";
+        return;
+    }
 
     try {
         const res = await fetch(`${API_BASE}/api/notifications`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": token
+                "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ userId, username, email })
         });
 
         const data = await res.json();
@@ -939,14 +970,20 @@ async function submitNotification() {
         msg.textContent = data.message;
 
         if (res.ok) {
-            localStorage.setItem("notif-email", email);
-            if (typeof updateLoginIcon === "function") updateLoginIcon();
+            document.getElementById("notif-inscription").style.display = "none";
+            document.getElementById("notif-desinscription").style.display = "block";
+            if (emailInfo) emailInfo.classList.remove("hidden");
+            if (title) title.textContent = "Déjà inscrit 😎";
+
+            const notifBtn = document.getElementById("notif-btn");
+            if (notifBtn) notifBtn.style.color = "#0f0";
+
             closeModal("modal-notif");
         }
     } catch (err) {
-        console.error("Erreur newsletter :", err);
-        msg.textContent = "Erreur lors de l'inscription.";
+        console.error("Erreur lors de l'inscription :", err);
         msg.style.color = "crimson";
+        msg.textContent = "Erreur lors de l'inscription.";
     }
 }
 
@@ -994,55 +1031,6 @@ document.getElementById("notif-btn").onclick = () => {
     openModal("modal-notif");
 };
 
-async function submitNotification() {
-    const email = document.getElementById("notif-email").value.trim();
-    const msg = document.getElementById("notif-msg");
-    const emailInfo = document.getElementById("notif-email-info");
-    const title = document.querySelector("#modal-notif h2");
-
-    const userId = localStorage.getItem("userId");
-    const username = localStorage.getItem("username");
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        msg.style.color = "crimson";
-        msg.textContent = "Adresse email invalide.";
-        return;
-    }
-
-    try {
-        const res = await fetch(`${API_BASE}/api/notifications`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId, username, email })
-        });
-
-        const data = await res.json();
-
-        msg.style.color = res.ok ? "green" : "crimson";
-        msg.textContent = data.message;
-
-        if (res.ok) {
-            // Mise à jour de l'état
-            document.getElementById("notif-inscription").style.display = "none";
-            document.getElementById("notif-desinscription").style.display = "block";
-            if (emailInfo) emailInfo.classList.remove("hidden");
-            if (title) title.textContent = "Déjà inscrit 😎";
-
-            // Change couleur cloche
-            const notifBtn = document.getElementById("notif-btn");
-            if (notifBtn) notifBtn.style.color = "#0f0";
-
-            // Ferme la modale
-            closeModal("modal-notif");
-        }
-    } catch (err) {
-        msg.style.color = "crimson";
-        msg.textContent = "Erreur lors de l'inscription.";
-        console.error(err);
-    }
-}
-
 // === Activer les filtres dynamiques si visibles ===
 function setupDynamicFilters() {
     const typeFilters = document.querySelectorAll(".filter-type");
@@ -1074,3 +1062,6 @@ dynamicFilters.forEach(input => {
         loadContent();
     });
 });
+
+// Patch global pour supprimer le warning [Violation] sur mobile
+document.addEventListener("touchstart", function () {}, { passive: true });

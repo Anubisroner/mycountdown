@@ -6,6 +6,8 @@ const verifyToken = require("../middleware/authMiddleware");
 
 // 🔐 PROTÈGE L'INSCRIPTION
 router.post("/", verifyToken, async (req, res) => {
+  console.log("🔐 Requête protégée reçue :", req.user);
+
   const { email } = req.body;
   const userId = req.user.userId;
 

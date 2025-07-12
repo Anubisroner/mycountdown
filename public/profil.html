@@ -148,6 +148,16 @@
     </div>
   </div>
 
+  <!-- Modale confirmation suppression -->
+  <div class="modal-background" id="modal-delete">
+    <div class="modal">
+      <span class="close" onclick="closeModal('modal-delete')">×</span>
+      <p id="delete-text"></p>
+      <button onclick="confirmDelete()">Oui, supprimer</button>
+      <button onclick="closeModal('modal-delete')">Annuler</button>
+    </div>
+  </div>
+
   <!-- Modale newsletter -->
   <div class="modal-background" id="modal-notif">
     <div class="modal">

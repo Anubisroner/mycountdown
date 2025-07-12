@@ -5,11 +5,12 @@ require("dotenv").config();
 
 const app = express();
 
-// Autoriser uniquement Netlify
+// CORS
 app.use(cors({
   origin: "https://mycountdown1.netlify.app",
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  exposedHeaders: ["Authorization"],
   credentials: true
 }));
 

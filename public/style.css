@@ -328,6 +328,10 @@ header i {
 }
 
 /* ========== PANNEAU ADMIN ========== */
+#admin-btn {
+    color: gold;
+}
+
 .admin-card-container {
     display: flex;
     flex-direction: column;

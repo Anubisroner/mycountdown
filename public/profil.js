@@ -1,43 +1,51 @@
 let userContent = [];
 
 function loadUserContent() {
-    console.log("loadUserContent() démarrée");
+    // console.log("loadUserContent() démarrée");
 
     const userId = localStorage.getItem("userId");
     const username = localStorage.getItem("username");
+    const token = localStorage.getItem("token");
 
-    if (!userId || !username) {
-        document.getElementById("profile-username").textContent = "Pseudo : non connecté";
-        document.getElementById("profile-count").textContent = "Ajouts : 0";
+    // Affiche le pseudo (même si pas connecté)
+    const pseudoEl = document.getElementById("profile-username");
+    const countEl = document.getElementById("profile-count");
+
+    if (!userId || !username || !token) {
+        if (pseudoEl) pseudoEl.textContent = "Pseudo : non connecté";
+        if (countEl) countEl.textContent = "Ajouts : 0";
         return;
     }
 
-    // Afficher le pseudo
-    document.getElementById("profile-username").textContent = `${username}`;
+    if (pseudoEl) pseudoEl.textContent = username;
 
-    console.log("Token utilisé pour releases/user :", token);
+    // console.log("Token utilisé pour releases/user :", token);
     const payloadBase64 = token.split('.')[1];
     const payloadDecoded = JSON.parse(atob(payloadBase64));
-    console.log("Contenu du token :", payloadDecoded);
-
+    // console.log("Contenu du token :", payloadDecoded);
 
     fetch(`${API_BASE}/api/releases/user`, {
         headers: {
-            Authorization: localStorage.getItem("token")
+            Authorization: `Bearer ${token}`
         }
     })
-        .then(res => res.json())
-        .then(data => {
+        .then(res => res.json().then(data => ({ status: res.status, ok: res.ok, body: data })))
+        .then(({ status, ok, body }) => {
+            if (!ok) {
+                console.warn("Contenus reçus du serveur :", body);
+                if (countEl) countEl.innerHTML = `<em style="color:#0ff">${body.message || "Erreur de chargement"}</em>`;
+                return;
+            }
 
-            console.log("Contenus reçus du serveur :", data);
-            userContent = data;
+            userContent = Array.isArray(body) ? body : [];
 
-            document.getElementById("profile-count").textContent = `${userContent.length} ajout(s)`;
+            // console.log("✅ Contenus utilisateur :", userContent);
+            if (countEl) countEl.textContent = `${userContent.length} ajout(s)`;
             filterAndDisplayUserContent();
         })
         .catch(err => {
             console.error("Erreur chargement contenus utilisateur :", err);
-            document.getElementById("profile-count").textContent = "Erreur de chargement";
+            if (countEl) countEl.textContent = "Erreur de chargement";
         });
 }
 
@@ -101,7 +109,8 @@ function displayUserContent(data) {
         deleteBtn.style.marginLeft = "10px";
         deleteBtn.onclick = () => {
             deleteId = item._id;
-            document.getElementById("delete-text").textContent = `Supprimer "${item.name}" ?`;
+            const deleteText = document.getElementById("delete-text");
+            if (deleteText) deleteText.textContent = `Supprimer "${item.name}" ?`;
             openModal("modal-delete");
         };
 
@@ -181,8 +190,8 @@ function displayUserContent(data) {
 }
 
 window.onload = () => {
-    console.log("profil.js chargé");
-    console.log("Appel de loadUserContent()");
+    // console.log("profil.js chargé");
+    // console.log("Appel de loadUserContent()");
 
 
     updateLoginIcon();
@@ -351,6 +360,7 @@ window.onload = () => {
     }
 };
 
+// Vérifie l’inscription
 async function checkNotificationStatus() {
     const emailSaved = localStorage.getItem("notif-email");
     const isSubscribed = !!emailSaved;
@@ -369,44 +379,7 @@ async function checkNotificationStatus() {
     }
 }
 
-async function submitNotification() {
-    const email = document.getElementById("notif-email").value.trim();
-    const msg = document.getElementById("notif-msg");
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        msg.textContent = "Adresse email invalide.";
-        msg.style.color = "crimson";
-        return;
-    }
-
-    const payload = {
-        userId: localStorage.getItem("userId"),
-        username: localStorage.getItem("username"),
-        email
-    };
-
-    const res = await fetch(`${API_BASE}/api/notifications`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-    msg.style.color = res.ok ? "green" : "crimson";
-    msg.textContent = data.message;
-
-    if (res.ok) {
-        localStorage.setItem("notif-email", email);
-
-        // Mise à jour du header (cloche en vert)
-        if (typeof updateLoginIcon === "function") updateLoginIcon();
-
-        // Ferme immédiatement la modale
-        closeModal("modal-notif");
-    }
-}
-
+// Désinscription
 async function unsubscribeNotification() {
     const userId = localStorage.getItem("userId");
     const msg = document.getElementById("notif-msg");
@@ -458,6 +431,7 @@ async function submitNotification() {
 
     const userId = localStorage.getItem("userId");
     const username = localStorage.getItem("username");
+    const token = localStorage.getItem("token");
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -466,10 +440,19 @@ async function submitNotification() {
         return;
     }
 
+    if (!token) {
+        msg.style.color = "crimson";
+        msg.textContent = "Token manquant, veuillez vous reconnecter.";
+        return;
+    }
+
     try {
         const res = await fetch(`${API_BASE}/api/notifications`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
             body: JSON.stringify({ userId, username, email })
         });
 
@@ -479,17 +462,14 @@ async function submitNotification() {
         msg.textContent = data.message;
 
         if (res.ok) {
-            // Mise à jour de l'état
             document.getElementById("notif-inscription").style.display = "none";
             document.getElementById("notif-desinscription").style.display = "block";
             if (emailInfo) emailInfo.classList.remove("hidden");
             if (title) title.textContent = "Déjà inscrit 😎";
 
-            // Change couleur cloche
             const notifBtn = document.getElementById("notif-btn");
             if (notifBtn) notifBtn.style.color = "#0f0";
 
-            // Ferme la modale
             closeModal("modal-notif");
         }
     } catch (err) {

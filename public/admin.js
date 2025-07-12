@@ -8,39 +8,64 @@ async function checkAdminAccess() {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/users/check-admin`, {
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+
+    // console.log("📤 Vérification admin - Token :", token);
+    // console.log("📤 Vérification admin - userId :", userId);
+
+    const res = await fetch(`${API_BASE}/api/users/check-admin/${userId}`, {
       headers: {
-        Authorization: token
+        "Authorization": `Bearer ${token}`
       }
     });
 
     const data = await res.json();
     if (!res.ok || !data.isAdmin) {
-      window.location.href = "/";
+      console.warn("⛔ Redirection bloquée : accès refusé");
+      console.warn("🔍 Réponse admin check :", data);
+      return;
     } else {
-      // L'utilisateur est admin, on peut charger la page
       loadUsers();
     }
   } catch (err) {
     console.error("Erreur vérification admin (admin.js) :", err);
-    window.location.href = "/";
+    return;
   }
 }
 
 
 async function loadUsers() {
   const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
 
-  const res = await fetch(`${API_BASE}/api/admin/users`, {
-    headers: {
-      Authorization: token
+  // console.log("📤 Requête admin/users avec token :", token);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/users`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await res.json();
+    // console.log("👥 Utilisateurs reçus :", data);
+
+    if (!res.ok) {
+      console.warn("⚠️ Accès admin refusé :", data.message || "Erreur inconnue");
+      return;
     }
-  });
 
-  allUsers = await res.json();
-  console.log("Utilisateurs reçus :", allUsers); // ← AJOUTE ÇA
+    if (!Array.isArray(data)) {
+      console.warn("⚠️ Données invalides, tableau attendu :", data);
+      return;
+    }
 
-  filterAndDisplayUsers();
+    allUsers = data;
+    filterAndDisplayUsers();
+  } catch (err) {
+    console.error("❌ Erreur récupération utilisateurs admin :", err);
+  }
 }
 
 function displayUsers(users) {
@@ -266,12 +291,16 @@ async function deleteUser(mode) {
   let url = `${API_BASE}/api/users/admin/user/${deleteUserId}`;
   if (mode === "releases") url += "/releases";
   if (mode === "full") url += "/full";
-  console.log("Suppression →", url);
+  // console.log("Suppression →", url);
+
+  const token = localStorage.getItem("token");
 
   try {
     const res = await fetch(url, {
       method: "DELETE",
-      headers: { Authorization: localStorage.getItem("token") }
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
     });
 
     let data = {};
@@ -293,6 +322,7 @@ async function deleteUser(mode) {
     console.error("Erreur réseau :", err);
   }
 }
+
 
 function filterAndDisplayUsers() {
   const query = document.getElementById("user-search").value.trim().toLowerCase();
@@ -327,44 +357,6 @@ async function checkNotificationStatus() {
   } else {
     inscription.style.display = "block";
     desinscription.style.display = "none";
-  }
-}
-
-async function submitNotification() {
-  const email = document.getElementById("notif-email").value.trim();
-  const msg = document.getElementById("notif-msg");
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    msg.textContent = "Adresse email invalide.";
-    msg.style.color = "crimson";
-    return;
-  }
-
-  const payload = {
-    userId: localStorage.getItem("userId"),
-    username: localStorage.getItem("username"),
-    email
-  };
-
-  const res = await fetch(`${API_BASE}/api/notifications`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await res.json();
-  msg.style.color = res.ok ? "green" : "crimson";
-  msg.textContent = data.message;
-
-  if (res.ok) {
-    localStorage.setItem("notif-email", email);
-
-    // Mise à jour du header (cloche en vert)
-    if (typeof updateLoginIcon === "function") updateLoginIcon();
-
-    // Ferme immédiatement la modale
-    closeModal("modal-notif");
   }
 }
 
@@ -419,6 +411,7 @@ async function submitNotification() {
 
   const userId = localStorage.getItem("userId");
   const username = localStorage.getItem("username");
+  const token = localStorage.getItem("token");
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
@@ -427,10 +420,19 @@ async function submitNotification() {
     return;
   }
 
+  if (!token) {
+    msg.style.color = "crimson";
+    msg.textContent = "Token manquant, veuillez vous reconnecter.";
+    return;
+  }
+
   try {
     const res = await fetch(`${API_BASE}/api/notifications`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
       body: JSON.stringify({ userId, username, email })
     });
 
@@ -440,17 +442,14 @@ async function submitNotification() {
     msg.textContent = data.message;
 
     if (res.ok) {
-      // Mise à jour de l'état
       document.getElementById("notif-inscription").style.display = "none";
       document.getElementById("notif-desinscription").style.display = "block";
       if (emailInfo) emailInfo.classList.remove("hidden");
       if (title) title.textContent = "Déjà inscrit 😎";
 
-      // Change couleur cloche
       const notifBtn = document.getElementById("notif-btn");
       if (notifBtn) notifBtn.style.color = "#0f0";
 
-      // Ferme la modale
       closeModal("modal-notif");
     }
   } catch (err) {
