@@ -7,7 +7,11 @@ const app = express();
 
 // CORS
 app.use(cors({
-  origin: "https://mycountdown1.netlify.app",
+  origin: [
+    "https://mycountdown1.netlify.app",
+    "https://mycountdown.fr",
+    "https://www.mycountdown.fr"
+  ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   exposedHeaders: ["Authorization"],

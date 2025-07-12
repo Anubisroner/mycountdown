@@ -3,9 +3,16 @@
 
 // 🌍 API distante pour la production
 const API_BASE = "https://mycountdown.onrender.com";
-console.log("🌐 API_BASE utilisée :", API_BASE);
 
 let isAdmin = false;
+
+// Menu burger toggle
+// const burger = document.getElementById('burger-menu');
+// const header = document.querySelector('header');
+
+// burger.addEventListener('click', () => {
+//     header.classList.toggle('active');
+// });
 
 // === Connexion / Déconnexion ===
 function isConnected() {

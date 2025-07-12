@@ -1,5 +1,3 @@
-
-
 /* ========== GLOBAL ========== */
 body {
     margin: 0;
@@ -17,6 +15,25 @@ body {
 }
 
 /* ========== HEADER ========== */
+
+/* MENU BURGER */
+#burger-menu {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1001;
+    background: #222;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: none;
+}
+
+#burger-menu i {
+    font-size: 24px;
+    color: white;
+}
+
 header {
     display: flex;
     justify-content: space-between;
@@ -38,7 +55,12 @@ header i {
     font-size: 24px;
     margin: 0 10px;
     cursor: pointer;
-    transition: transform 0.2s, color 0.2s;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+header i:hover {
+    transform: scale(1.1);
+    color: grey;
 }
 
 /* ========== FILTRES (catégories & plateformes) ========== */
@@ -595,4 +617,46 @@ h2 {
 
 #notif-btn.subscribed {
     color: limegreen;
+}
+
+/* ========== VERSION MOBILE ========== */
+@media (max-width: 768px) {
+    @media (max-width: 480px) {
+        header {
+            display: none !important;
+        }
+
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px;
+        }
+
+        .card {
+            width: 42%;
+            margin: 0;
+        }
+
+        .card img {
+            height: 180px !important;
+        }
+
+        .card h4 {
+            font-size: 15px;
+        }
+
+        .card p,
+        .card .countdown,
+        .card a {
+            font-size: 13px;
+        }
+
+        .card i.fas.fa-pen,
+        .delete-btn,
+        .edit-btn {
+            font-size: 13px;
+        }
+    }
 }
