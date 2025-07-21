@@ -6,14 +6,6 @@ const API_BASE = "https://mycountdown.onrender.com";
 
 let isAdmin = false;
 
-// Menu burger toggle
-// const burger = document.getElementById('burger-menu');
-// const header = document.querySelector('header');
-
-// burger.addEventListener('click', () => {
-//     header.classList.toggle('active');
-// });
-
 // === Connexion / Déconnexion ===
 function isConnected() {
     return !!localStorage.getItem("token");
@@ -105,7 +97,7 @@ async function register() {
         return;
     }
 
-    // ✅ Récupère le token reCAPTCHA
+    // Récupère le token reCAPTCHA
     const token = grecaptcha.getResponse();
     if (!token) {
         msg.textContent = "Veuillez valider le captcha.";
@@ -122,8 +114,8 @@ async function register() {
     msg.textContent = data.message;
 
     if (res.ok) {
-        grecaptcha.reset(); // Réinitialise le captcha
-        await login(username, password); // Auto login
+        grecaptcha.reset();
+        await login(username, password);
     }
 }
 
@@ -304,10 +296,6 @@ async function updateLoginIcon() {
         adminBtn.style.display = "none";
         if (isConnected && token) {
 
-            // console.log("🔍 Vérif admin depuis updateLoginIcon()");
-            // console.log("📤 userId :", userId);
-            // console.log("📤 token :", token);
-
             try {
                 const res = await fetch(`${API_BASE}/api/users/check-admin/${userId}`, {
                     headers: {
@@ -371,7 +359,6 @@ window.onload = async () => {
             const platformFilter = document.getElementById("platform-filters");
             if (platformFilter) platformFilter.style.display = "none";
 
-            // Recharge tout le contenu
             loadContent();
 
             // Afficher / masquer la barre de recherche
@@ -670,7 +657,7 @@ async function loadContent() {
     }
 
     const now = new Date();
-    now.setHours(0, 0, 0, 0); // Comparaison à minuit
+    now.setHours(0, 0, 0, 0);
 
     if (filterType === "UNKNOWN_DATE") {
         data = data.filter(item => !item.releaseDate);
@@ -716,18 +703,16 @@ async function loadContent() {
 // Fonction de mise à jour du compte à rebours
 function updateCountdown(element, date) {
     const target = new Date(date);
-    target.setHours(0, 0, 0, 0); // Forcer minuit
+    target.setHours(0, 0, 0, 0); // Date de sortie minuit
     const now = new Date();
     const diff = target - now;
 
     const currentFilter = localStorage.getItem("filter-type");
 
     if (diff <= 0) {
-        // Si on est sur le filtre "Déjà sortie", afficher "Disponible !"
         if (currentFilter === "PAST") {
             element.textContent = "Disponible !";
         } else {
-            // Sinon, ne rien afficher (car déjà sorti)
             element.textContent = "";
         }
         return;
@@ -783,7 +768,6 @@ async function confirmDelete() {
             closeModal("modal-delete");
             deleteId = null;
 
-            // Recharge le contenu selon la page
             if (typeof loadContent === "function") loadContent();
             if (typeof loadUserContent === "function") loadUserContent();
         } else {
@@ -809,7 +793,6 @@ function displayContent(data) {
         targetDate.setHours(0, 0, 0, 0); // Assurer minuit
         const isPast = hasDate && targetDate <= now;
 
-        // Exclure les contenus déjà sortis UNIQUEMENT si on ne regarde pas "Déjà sortie"
         if (!showPast && isPast) return;
 
         const card = document.createElement("div");
@@ -1013,17 +996,13 @@ async function unsubscribeNotification() {
         msg.textContent = data.message;
 
         if (res.ok) {
-            // Supprime l'email stocké localement
             localStorage.removeItem("notif-email");
 
-            // Remet la cloche en blanc
             const notifBtn = document.getElementById("notif-btn");
             if (notifBtn) notifBtn.style.color = "white";
 
-            // Met à jour le header complet si besoin
             if (typeof updateLoginIcon === "function") updateLoginIcon();
 
-            // Ferme la modale
             closeModal("modal-notif");
         }
     } catch (err) {
@@ -1073,3 +1052,21 @@ dynamicFilters.forEach(input => {
 
 // Patch global pour supprimer le warning [Violation] sur mobile
 document.addEventListener("touchstart", function () { }, { passive: true });
+
+// Menu burger toggle mobile
+const burgerMenu = document.getElementById("burger-menu");
+const header = document.querySelector("header");
+const burgerIcon = burgerMenu.querySelector("i");
+
+burgerMenu.addEventListener("click", () => {
+    burgerMenu.classList.toggle("active");
+    header.classList.toggle("active");
+
+    burgerIcon.style.opacity = 0;
+
+    setTimeout(() => {
+        burgerIcon.classList.toggle("fa-bars");
+        burgerIcon.classList.toggle("fa-times");
+        burgerIcon.style.opacity = 1;
+    }, 200);
+});
