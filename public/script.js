@@ -1,8 +1,8 @@
 // 🌐 API locale pour le développement
-// const API_BASE = "http://localhost:3000";
+const API_BASE = "http://localhost:3000";
 
 // 🌍 API distante pour la production
-const API_BASE = "https://mycountdown.onrender.com";
+// const API_BASE = "https://mycountdown.onrender.com";
 
 let isAdmin = false;
 
@@ -174,7 +174,7 @@ async function login(username = null, password = null) {
 
 // === Envoi d'un contenu vers l’API ===
 async function submitContent() {
-    const msg = document.getElementById("add-msg"); // ✅ doit être défini avant tout
+    const msg = document.getElementById("add-msg");
     const name = document.getElementById("add-name").value.trim();
 
     const nameRegex = /^[\wÀ-ÿ0-9 :\-]+$/;
@@ -1070,3 +1070,138 @@ burgerMenu.addEventListener("click", () => {
         burgerIcon.style.opacity = 1;
     }, 200);
 });
+
+
+// 🔒 Désactive clic droit
+document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+// 🔒 Désactive certaines touches (F12, Ctrl+Shift+I/J/U, Ctrl+U)
+document.addEventListener("keydown", (e) => {
+    if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key)) ||
+        (e.ctrlKey && ["U", "S"].includes(e.key))
+    ) {
+        e.preventDefault();
+    }
+});
+
+(function () {
+    let matrixLaunched = false;
+    let lastStateOpen = false;
+
+    console.clear();
+    const matrixMessage = `
+
+████████╗██╗   ██╗    ███████╗███████╗                 
+╚══██╔══╝██║   ██║    ██╔════╝██╔════╝                 
+   ██║   ██║   ██║    █████╗  ███████╗                 
+   ██║   ██║   ██║    ██╔══╝  ╚════██║                 
+   ██║   ╚██████╔╝    ███████╗███████║                 
+   ╚═╝    ╚═════╝     ╚══════╝╚══════╝      
+
+██████╗  █████╗ ███╗   ██╗███████╗    ██╗      █████╗  
+██╔══██╗██╔══██╗████╗  ██║██╔════╝    ██║     ██╔══██╗ 
+██║  ██║███████║██╔██╗ ██║███████╗    ██║     ███████║ 
+██║  ██║██╔══██║██║╚██╗██║╚════██║    ██║     ██╔══██║ 
+██████╔╝██║  ██║██║ ╚████║███████║    ███████╗██║  ██║ 
+╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝    ╚══════╝╚═╝  ╚═╝ 
+
+███╗   ███╗ █████╗ ████████╗██████╗ ██╗ ██████╗███████╗
+████╗ ████║██╔══██╗╚══██╔══╝██╔══██╗██║██╔════╝██╔════╝
+██╔████╔██║███████║   ██║   ██████╔╝██║██║     █████╗  
+██║╚██╔╝██║██╔══██║   ██║   ██╔══██╗██║██║     ██╔══╝  
+██║ ╚═╝ ██║██║  ██║   ██║   ██║  ██║██║╚██████╗███████╗
+╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝ ╚═════╝╚══════╝
+
+███╗   ██╗███████╗ ██████╗                             
+████╗  ██║██╔════╝██╔═══██╗                            
+██╔██╗ ██║█████╗  ██║   ██║                            
+██║╚██╗██║██╔══╝  ██║   ██║                            
+██║ ╚████║███████╗╚██████╔╝                            
+╚═╝  ╚═══╝╚══════╝ ╚═════╝                             
+
+`;
+
+    console.log(`%c${matrixMessage}`, 'color: #00ff00; font-size: 12px; font-family: monospace;');
+
+    function launchMatrixEffect() {
+        if (matrixLaunched) return;
+        matrixLaunched = true;
+
+        const canvas = document.createElement('canvas');
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100vw';
+        canvas.style.height = '100vh';
+        canvas.style.zIndex = '9999';
+        canvas.style.pointerEvents = 'none';
+        canvas.style.background = 'black';
+        document.body.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const katakana = 'アァイィウヴエェオカキクケコサシスセソ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const fontSize = 16;
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = new Array(columns).fill(1);
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#0F0';
+            ctx.font = `${fontSize}px monospace`;
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = katakana[Math.floor(Math.random() * katakana.length)];
+                const x = i * fontSize;
+                const y = drops[i] * fontSize;
+
+                ctx.fillText(text, x, y);
+
+                if (y > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+
+                drops[i]++;
+            }
+        }
+
+        const matrixInterval = setInterval(draw, 70);
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                clearInterval(matrixInterval);
+                canvas.remove();
+                console.clear();
+                console.log('%cAnimation Matrix arrêtée.', 'color: red; font-weight: bold;');
+            }
+        });
+
+        // ✅ Ajuste le canvas si la fenêtre change de taille
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    }
+
+    // 🔁 Vérifie ouverture / fermeture de console via debugger delay
+    setInterval(() => {
+        const before = performance.now();
+        debugger;
+        const after = performance.now();
+
+        const delta = after - before;
+        const isOpen = delta > 100;
+
+        if (!isOpen && lastStateOpen && !matrixLaunched) {
+            launchMatrixEffect();
+        }
+
+        lastStateOpen = isOpen;
+    }, 500);
+})();
