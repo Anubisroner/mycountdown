@@ -2,7 +2,7 @@
 // const API_BASE = "http://localhost:3000";
 
 // 🌍 API distante pour la production
-const API_BASE = "https://mycountdown.onrender.com";
+const API_BASE = "https://mycountdown.darkav.synology.me";
 
 let isAdmin = false;
 
