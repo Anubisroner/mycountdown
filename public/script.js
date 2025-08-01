@@ -177,7 +177,7 @@ async function submitContent() {
     const msg = document.getElementById("add-msg");
     const name = document.getElementById("add-name").value.trim();
 
-    const nameRegex = /^[\wÀ-ÿ0-9 :\-]+$/;
+    const nameRegex = /^[\wÀ-ÿ0-9 :'\-’]+$/;
     if (!nameRegex.test(name)) {
         msg.textContent = "Le nom contient des caractères non autorisés.";
         return;

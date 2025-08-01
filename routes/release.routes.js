@@ -31,10 +31,11 @@ router.post("/add", verifyToken, async (req, res) => {
       return res.status(400).json({ message: "Champs requis manquants." });
     }
 
-    // ✅ Vérification nom : lettres, chiffres, espaces, : et -
-    const nameRegex = /^[\wÀ-ÿ0-9 :\-]+$/;
+    // ✅ Vérification nom : lettres, chiffres, espaces, : , - et apostrophes
+    const nameRegex = /^[\wÀ-ÿ0-9 :'\-’]+$/;
     if (!nameRegex.test(name)) {
-      return res.status(400).json({ message: "Le nom contient des caractères non autorisés." });
+      msg.textContent = "Le nom contient des caractères non autorisés.";
+      return;
     }
 
     const newRelease = await Release.create({
@@ -62,7 +63,7 @@ router.put("/update/:id", verifyToken, isOwnerOrAdmin, async (req, res) => {
 
     // ✅ Vérif du nom s’il est présent dans la mise à jour
     if (updatedData.name) {
-      const nameRegex = /^[\wÀ-ÿ0-9 :\-]+$/;
+      const nameRegex = /^[\wÀ-ÿ0-9 :'\-’]+$/;
       if (!nameRegex.test(updatedData.name)) {
         return res.status(400).json({ message: "Le nom contient des caractères non autorisés." });
       }
